@@ -88,7 +88,6 @@ export const NAV = {
     { label: 'Trouver un remplaçant', href: '/trouver-un-remplacant' },
     { label: 'Comment ça marche', href: '/comment-ca-marche' },
     { label: 'Métiers', href: '/#metiers' },
-    { label: 'Blog', href: '/blog' },
   ],
   footer: {
     'Le service': [
@@ -107,7 +106,6 @@ export const NAV = {
     ],
     'Ressources': [
       { label: 'Missions disponibles', href: '/missions' },
-      { label: 'Blog', href: '/blog' },
       { label: 'Publier un besoin', href: '/publier-un-besoin' },
       { label: 'S’inscrire comme remplaçant', href: '/inscription-remplacant' },
     ],

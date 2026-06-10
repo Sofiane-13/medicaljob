@@ -82,6 +82,8 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
         }
       </div>
 
+      <div id="dir-sentinel" class="list-sentinel" hidden aria-hidden="true">Chargement…</div>
+
       <div class="dir-cta card" data-reveal>
         <div>
           <h2 class="cta-titre">Vous êtes un professionnel de santé ?</h2>
@@ -211,6 +213,16 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
     color: var(--color-fg-subtle);
   }
 
+  .list-sentinel {
+    text-align: center;
+    padding: 1.25rem;
+    font-size: var(--text-sm);
+    color: var(--color-fg-subtle);
+  }
+  .list-sentinel[hidden] {
+    display: none;
+  }
+
   .dir-cta {
     display: flex;
     flex-wrap: wrap;
@@ -268,28 +280,53 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
         </article>`;
     }
 
-    function render() {
+    const sentinel = document.getElementById('dir-sentinel');
+    const CHUNK = 12;
+    let filtered = [];
+    let rendered = 0;
+
+    function renderMore() {
+      const next = filtered.slice(rendered, rendered + CHUNK);
+      if (next.length) {
+        list.insertAdjacentHTML('beforeend', next.map(cardHtml).join(''));
+        rendered += next.length;
+      }
+      if (sentinel) sentinel.hidden = rendered >= filtered.length;
+    }
+
+    function applyFilters() {
       const mt = fMetier.value;
       const zn = fZone.value.trim().toLowerCase();
       const dp = fDispo.value;
-      const filtered = profils.filter((p) => {
+      filtered = profils.filter((p) => {
         if (mt && p.metier !== mt) return false;
         if (dp && p.disponibilite !== dp) return false;
         if (zn && !(p.zones || '').toLowerCase().includes(zn)) return false;
         return true;
       });
       countEl.textContent = `${filtered.length} profil${filtered.length > 1 ? 's' : ''}`;
+      list.innerHTML = '';
+      rendered = 0;
       if (filtered.length === 0) {
+        if (sentinel) sentinel.hidden = true;
         list.innerHTML =
           '<div class="dir-state card"><h2 class="state-titre">Aucun profil pour ces critères</h2><p class="text-muted">Élargissez votre recherche, ou publiez un besoin pour toucher tous les remplaçants concernés.</p></div>';
         return;
       }
-      list.innerHTML = filtered.map(cardHtml).join('');
+      renderMore();
     }
 
-    fMetier.addEventListener('change', render);
-    fDispo.addEventListener('change', render);
-    fZone.addEventListener('input', render);
+    if (sentinel && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => entries.forEach((e) => { if (e.isIntersecting) renderMore(); }),
+        { rootMargin: '400px 0px' }
+      );
+      io.observe(sentinel);
+    }
+
+    fMetier.addEventListener('change', applyFilters);
+    fDispo.addEventListener('change', applyFilters);
+    fZone.addEventListener('input', applyFilters);
 
     fetch(`${supabaseUrl}/rest/v1/remplacants_publics?select=*&order=created_at.desc`, {
       headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
@@ -297,9 +334,10 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
       .then((r) => (r.ok ? r.json() : Promise.reject(r)))
       .then((data) => {
         profils = Array.isArray(data) ? data : [];
-        render();
+        applyFilters();
       })
       .catch(() => {
+        if (sentinel) sentinel.hidden = true;
         list.innerHTML =
           '<div class="dir-state card"><p class="text-muted">Impossible de charger les profils pour le moment. Réessayez plus tard.</p></div>';
       });

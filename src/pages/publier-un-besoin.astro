@@ -48,7 +48,10 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
           table="besoins"
           formId="form-etablissement"
           submitLabel="Publier mon besoin"
+          successTitle="Besoin envoyé !"
           successText="Votre besoin a bien été enregistré. Il sera publié sur la page Missions après une rapide validation."
+          successCtaHref="/trouver-un-remplacant"
+          successCtaLabel="Parcourir les remplaçants"
         >
           <input type="hidden" name="profil_ref" id="profil_ref" value="" />
           <p id="profil-note" class="profil-note" hidden></p>

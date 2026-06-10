@@ -8,44 +8,70 @@ export type Props = {
   formId: string;
   /** Texte du bouton d'envoi */
   submitLabel?: string;
-  /** Message de succès affiché après envoi */
+  /** Titre de l'écran de confirmation */
+  successTitle?: string;
+  /** Message de confirmation affiché après envoi */
   successText?: string;
+  /** Lien d'action principal sur l'écran de confirmation */
+  successCtaHref?: string;
+  successCtaLabel?: string;
 };
 
 const {
   table,
   formId,
   submitLabel = 'Envoyer',
+  successTitle = 'C’est envoyé !',
   successText = 'Merci, votre demande a bien été enregistrée. Nous revenons vers vous rapidement.',
+  successCtaHref,
+  successCtaLabel,
 } = Astro.props;
 
 const supabaseUrl = SITE.supabase.url;
 const supabaseKey = SITE.supabase.anonKey;
 const notConfigured = supabaseUrl.includes('XXXX') || supabaseKey.includes('XXXX');
+const successId = `${formId}-success`;
 ---
 
-<form id={formId} class="fs-form" data-not-configured={notConfigured ? 'true' : 'false'}>
-  <!-- Honeypot anti-spam -->
-  <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="fs-honeypot" aria-hidden="true" />
+<div class="fs-wrap">
+  <form id={formId} class="fs-form" data-not-configured={notConfigured ? 'true' : 'false'}>
+    <!-- Honeypot anti-spam -->
+    <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="fs-honeypot" aria-hidden="true" />
 
-  <slot />
+    <slot />
 
-  {
-    notConfigured && (
-      <p class="fs-warning" role="status">
-        ⚠️ Stockage non configuré : renseignez votre projet Supabase dans
-        <code>src/data/site.ts</code> et exécutez <code>supabase-schema.sql</code>.
-      </p>
-    )
-  }
+    {
+      notConfigured && (
+        <p class="fs-warning" role="status">
+          ⚠️ Stockage non configuré : renseignez votre projet Supabase dans
+          <code>src/data/site.ts</code> et exécutez le schéma SQL.
+        </p>
+      )
+    }
 
-  <button type="submit" class="btn-primary btn-lg fs-submit">{submitLabel}</button>
+    <button type="submit" class="btn-primary btn-lg fs-submit">{submitLabel}</button>
 
-  <p class="fs-success" hidden role="status">✅ {successText}</p>
-  <p class="fs-error" hidden role="alert">
-    Une erreur est survenue. Réessayez ou écrivez-nous directement par email.
-  </p>
-</form>
+    <p class="fs-error" hidden role="alert">
+      Une erreur est survenue. Réessayez ou écrivez-nous directement par email.
+    </p>
+  </form>
+
+  <div class="fs-success" id={successId} hidden role="status" aria-live="polite">
+    <span class="fs-success-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </span>
+    <h2 class="fs-success-title">{successTitle}</h2>
+    <p class="fs-success-text">{successText}</p>
+    <div class="fs-success-actions">
+      {successCtaHref && (
+        <a href={successCtaHref} class="btn-primary">{successCtaLabel ?? 'Continuer'}</a>
+      )}
+      <a href="/" class={successCtaHref ? 'btn-secondary' : 'btn-primary'}>Retour à l’accueil</a>
+    </div>
+  </div>
+</div>
 
 <style>
   .fs-form {
@@ -76,14 +102,6 @@ const notConfigured = supabaseUrl.includes('XXXX') || supabaseKey.includes('XXXX
     font-family: var(--font-mono);
     font-size: 0.8em;
   }
-  .fs-success {
-    font-size: var(--text-base);
-    color: #065f46;
-    background: var(--color-teal-soft);
-    border: 1px solid #99e5d8;
-    border-radius: var(--radius-md);
-    padding: 1rem 1.25rem;
-  }
   .fs-error {
     font-size: var(--text-sm);
     color: #991b1b;
@@ -92,42 +110,91 @@ const notConfigured = supabaseUrl.includes('XXXX') || supabaseKey.includes('XXXX
     border-radius: var(--radius-md);
     padding: 0.875rem 1rem;
   }
+
+  /* Écran de confirmation */
+  .fs-success {
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+  .fs-success-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: var(--color-teal-soft);
+    color: var(--color-teal);
+    margin-bottom: 1.25rem;
+  }
+  .fs-success-icon svg {
+    width: 2rem;
+    height: 2rem;
+  }
+  .fs-success-title {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin-bottom: 0.75rem;
+  }
+  .fs-success-text {
+    color: var(--color-fg-muted);
+    line-height: 1.6;
+    max-width: 32rem;
+    margin: 0 auto 1.75rem;
+  }
+  .fs-success-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+  }
   @media (max-width: 480px) {
     .fs-submit {
       align-self: stretch;
       width: 100%;
     }
+    .fs-success-actions {
+      flex-direction: column;
+    }
+    .fs-success-actions a {
+      width: 100%;
+    }
   }
 </style>
 
-<script is:inline define:vars={{ formId, table, supabaseUrl, supabaseKey }}>
+<script is:inline define:vars={{ formId, successId, table, supabaseUrl, supabaseKey }}>
   function initSupabaseForm() {
     const form = document.getElementById(formId);
     if (!form || form.dataset.bound === 'true') return;
     form.dataset.bound = 'true';
 
-    const success = form.querySelector('.fs-success');
+    const panel = document.getElementById(successId);
     const errorEl = form.querySelector('.fs-error');
     const submit = form.querySelector('.fs-submit');
+
+    const showSuccess = () => {
+      form.hidden = true;
+      if (panel) {
+        panel.hidden = false;
+        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    };
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       // Honeypot : si rempli, on simule le succès sans rien envoyer.
       if (form.querySelector('[name="_gotcha"]').value) {
-        form.reset();
-        success.hidden = false;
+        showSuccess();
         return;
       }
 
       if (form.dataset.notConfigured === 'true') {
         window.alert(
-          'Stockage non configuré. Crée un projet Supabase, colle l’URL + la clé anon dans src/data/site.ts, puis exécute supabase-schema.sql.'
+          'Stockage non configuré. Crée un projet Supabase, colle l’URL + la clé anon dans src/data/site.ts, puis exécute le schéma SQL.'
         );
         return;
       }
 
-      // Construit la ligne : on ignore les champs techniques (_*) et le consentement.
       const payload = {};
       new FormData(form).forEach((value, key) => {
         if (key.startsWith('_') || key === 'rgpd') return;
@@ -135,7 +202,6 @@ const notConfigured = supabaseUrl.includes('XXXX') || supabaseKey.includes('XXXX
         payload[key] = v === '' ? null : v;
       });
 
-      success.hidden = true;
       errorEl.hidden = true;
       submit.disabled = true;
       const originalLabel = submit.textContent;
@@ -153,9 +219,7 @@ const notConfigured = supabaseUrl.includes('XXXX') || supabaseKey.includes('XXXX
           body: JSON.stringify(payload),
         });
         if (res.ok) {
-          form.reset();
-          success.hidden = false;
-          success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          showSuccess();
         } else {
           errorEl.hidden = false;
         }

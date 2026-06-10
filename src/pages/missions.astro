@@ -72,6 +72,8 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
         }
       </div>
 
+      <div id="missions-sentinel" class="list-sentinel" hidden aria-hidden="true">Chargement…</div>
+
       <div class="missions-cta card" data-reveal>
         <div>
           <h2 class="cta-titre">Vous êtes un établissement ?</h2>
@@ -201,6 +203,16 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
     color: var(--color-fg-subtle);
   }
 
+  .list-sentinel {
+    text-align: center;
+    padding: 1.25rem;
+    font-size: var(--text-sm);
+    color: var(--color-fg-subtle);
+  }
+  .list-sentinel[hidden] {
+    display: none;
+  }
+
   .missions-cta {
     display: flex;
     flex-wrap: wrap;
@@ -268,25 +280,50 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
         </article>`;
     }
 
-    function render() {
+    const sentinel = document.getElementById('missions-sentinel');
+    const CHUNK = 12;
+    let filtered = [];
+    let rendered = 0;
+
+    function renderMore() {
+      const next = filtered.slice(rendered, rendered + CHUNK);
+      if (next.length) {
+        list.insertAdjacentHTML('beforeend', next.map(cardHtml).join(''));
+        rendered += next.length;
+      }
+      if (sentinel) sentinel.hidden = rendered >= filtered.length;
+    }
+
+    function applyFilters() {
       const mt = filterMetier.value;
       const vl = filterVille.value.trim().toLowerCase();
-      const filtered = missions.filter((m) => {
+      filtered = missions.filter((m) => {
         if (mt && m.metier !== mt) return false;
         if (vl && !(m.ville || '').toLowerCase().includes(vl)) return false;
         return true;
       });
       countEl.textContent = `${filtered.length} mission${filtered.length > 1 ? 's' : ''}`;
+      list.innerHTML = '';
+      rendered = 0;
       if (filtered.length === 0) {
+        if (sentinel) sentinel.hidden = true;
         list.innerHTML =
           '<div class="missions-state card"><h2 class="state-titre">Aucune mission pour ces critères</h2><p class="text-muted">Élargissez votre recherche, ou inscrivez-vous pour être prévenu des nouvelles missions.</p></div>';
         return;
       }
-      list.innerHTML = filtered.map(cardHtml).join('');
+      renderMore();
     }
 
-    filterMetier.addEventListener('change', render);
-    filterVille.addEventListener('input', render);
+    if (sentinel && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => entries.forEach((e) => { if (e.isIntersecting) renderMore(); }),
+        { rootMargin: '400px 0px' }
+      );
+      io.observe(sentinel);
+    }
+
+    filterMetier.addEventListener('change', applyFilters);
+    filterVille.addEventListener('input', applyFilters);
 
     fetch(`${supabaseUrl}/rest/v1/missions_publiques?select=*&order=created_at.desc`, {
       headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
@@ -294,9 +331,10 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
       .then((r) => (r.ok ? r.json() : Promise.reject(r)))
       .then((data) => {
         missions = Array.isArray(data) ? data : [];
-        render();
+        applyFilters();
       })
       .catch(() => {
+        if (sentinel) sentinel.hidden = true;
         list.innerHTML =
           '<div class="missions-state card"><p class="text-muted">Impossible de charger les missions pour le moment. Réessayez plus tard.</p></div>';
       });

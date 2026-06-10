@@ -47,7 +47,10 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
           table="remplacants"
           formId="form-remplacant"
           submitLabel="Créer mon profil"
-          successText="Votre profil a bien été enregistré. Nous vous contactons dès qu’une mission correspond."
+          successTitle="Profil créé !"
+          successText="Votre profil a bien été enregistré. Nous vous contactons dès qu’une mission correspond à vos critères."
+          successCtaHref="/missions"
+          successCtaLabel="Voir les missions disponibles"
         >
           <input type="hidden" name="mission_ref" id="mission_ref" value="" />
           <p id="mission-note" class="mission-note" hidden></p>

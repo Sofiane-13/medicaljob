@@ -15,9 +15,12 @@ create or replace view public.remplacants_publics as
 
 grant select on public.remplacants_publics to anon;
 
+-- 3) Affichage automatique des profils (sans modération)
+--    Chaque nouvelle inscription apparaît immédiatement dans l'annuaire.
+alter table public.remplacants alter column statut set default 'publie';
+update public.remplacants set statut = 'publie' where statut = 'nouveau';
+
 -- ============================================================
---  Rappel modération :
---  Un profil remplaçant n'apparaît dans l'annuaire /trouver-un-remplacant
---  qu'une fois son "statut" passé à 'publie' dans Table Editor → remplacants.
---  (Par défaut un nouveau profil est en 'nouveau'.)
+--  Pour RETIRER un profil de l'annuaire : passe son "statut" à 'archive'
+--  dans Table Editor → remplacants (modération a posteriori).
 -- ============================================================

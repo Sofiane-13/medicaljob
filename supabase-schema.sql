@@ -70,7 +70,9 @@ create table if not exists public.remplacants (
   tel           text,
   -- Référence d'une mission à laquelle le remplaçant répond (optionnel)
   mission_ref   text,
-  statut        text not null default 'nouveau'
+  -- 'publie' par défaut : les profils apparaissent dans l'annuaire sans modération.
+  -- Pour retirer un profil, passe son statut à 'archive'.
+  statut        text not null default 'publie'
 );
 
 alter table public.remplacants enable row level security;

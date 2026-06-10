@@ -9,17 +9,23 @@ import { SITE, LEGAL } from '@data/site';
   maj={LEGAL.dateMaj}
 >
   <p>
-    Les présentes mentions légales sont à compléter avec les informations définitives de
-    l’éditeur avant la mise en ligne du site.
+    Le site <strong>{SITE.name}</strong> ({SITE.domain}) est édité par la société
+    <strong>{LEGAL.societe.raisonSociale}</strong>, qui exploite la marque commerciale
+    « {LEGAL.societe.marqueCommerciale} ».
   </p>
 
   <h2>Éditeur du site</h2>
   <p>
     <strong>{LEGAL.societe.raisonSociale}</strong><br />
+    Marque commerciale : {LEGAL.societe.marqueCommerciale}<br />
     Forme juridique : {LEGAL.societe.formeJuridique}<br />
     Capital social : {LEGAL.societe.capital}<br />
-    SIREN : {LEGAL.societe.siren} — SIRET : {LEGAL.societe.siret}<br />
     Siège social : {LEGAL.societe.adresse}, {LEGAL.societe.codePostal} {LEGAL.societe.ville}, {LEGAL.societe.pays}<br />
+    SIREN : {LEGAL.societe.siren} — SIRET : {LEGAL.societe.siret}<br />
+    RCS : {LEGAL.societe.rcsVille}<br />
+    N° TVA intracommunautaire : {LEGAL.societe.tvaIntra}<br />
+    Code APE/NAF : {LEGAL.societe.nafCode} — {LEGAL.societe.nafLabel}<br />
+    Président : {LEGAL.societe.president}<br />
     Directeur de la publication : {LEGAL.societe.directeurPublication}<br />
     Contact : <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
   </p>

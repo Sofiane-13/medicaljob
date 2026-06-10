@@ -2,6 +2,7 @@
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
 import SupabaseForm from '@components/forms/SupabaseForm.astro';
+import CommuneSelect from '@components/forms/CommuneSelect.astro';
 import { SITE } from '@data/site';
 import { METIERS } from '@data/metiers';
 import { organization, breadcrumb, buildGraph } from '@lib/schema';
@@ -74,7 +75,7 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
             </div>
             <div class="field">
               <label class="field-label" for="ville">Ville <span class="req">*</span></label>
-              <input id="ville" name="ville" class="input" type="text" required />
+              <CommuneSelect name="ville" id="ville" required={true} />
             </div>
           </div>
 

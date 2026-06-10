@@ -1,0 +1,216 @@
+---
+/**
+ * Autocomplétion de commune française.
+ * Source : Base Adresse Nationale (api-adresse.data.gouv.fr), filtrée sur
+ * type=municipality → uniquement des communes. Même source que Diasporteur.
+ * La valeur soumise est "Nom (code postal)", ex. "Montreuil (93100)".
+ */
+export type Props = {
+  name?: string;
+  id?: string;
+  required?: boolean;
+  placeholder?: string;
+  value?: string;
+};
+
+const {
+  name = 'ville',
+  id = name,
+  required = false,
+  placeholder = 'Tapez le nom d’une commune…',
+  value = '',
+} = Astro.props;
+
+const listId = `${id}-options`;
+---
+
+<div class="commune-select" data-commune-select>
+  <input
+    type="text"
+    id={id}
+    name={name}
+    class="input commune-input"
+    value={value}
+    placeholder={placeholder}
+    autocomplete="off"
+    role="combobox"
+    aria-autocomplete="list"
+    aria-expanded="false"
+    aria-controls={listId}
+    required={required}
+  />
+  <ul class="commune-list" id={listId} role="listbox" hidden></ul>
+</div>
+
+<style>
+  .commune-select {
+    position: relative;
+  }
+  .commune-list {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 16rem;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    padding: 0.25rem;
+  }
+  .commune-list[hidden] {
+    display: none;
+  }
+  :global(.commune-option) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  :global(.commune-option.active),
+  :global(.commune-option:hover) {
+    background: var(--color-accent-soft);
+  }
+  :global(.co-nom) {
+    font-weight: 600;
+    color: var(--color-fg);
+    font-size: var(--text-sm);
+  }
+  :global(.co-ctx) {
+    font-size: var(--text-xs);
+    color: var(--color-fg-subtle);
+  }
+</style>
+
+<script>
+  // Script hoisté (dédupliqué par Astro) : initialise tous les sélecteurs
+  // de commune présents sur la page, y compris après navigation View Transitions.
+  const BAN_API = 'https://api-adresse.data.gouv.fr/search/';
+
+  type Commune = { name: string; postcode: string; citycode: string; context: string };
+
+  const esc = (s: string) =>
+    String(s ?? '').replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string)
+    );
+
+  function initCommuneSelect(root: HTMLElement) {
+    if (root.dataset.bound === 'true') return;
+    root.dataset.bound = 'true';
+
+    const input = root.querySelector('.commune-input') as HTMLInputElement;
+    const list = root.querySelector('.commune-list') as HTMLUListElement;
+    let items: Commune[] = [];
+    let active = -1;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const close = () => {
+      list.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      active = -1;
+    };
+    const open = () => {
+      if (items.length) {
+        list.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+      }
+    };
+
+    const render = () => {
+      list.innerHTML = items
+        .map(
+          (it, i) =>
+            `<li role="option" class="commune-option${i === active ? ' active' : ''}" data-i="${i}">` +
+            `<span class="co-nom">${esc(it.name)}</span>` +
+            `<span class="co-ctx">${esc(it.postcode)} · ${esc(it.context)}</span></li>`
+        )
+        .join('');
+    };
+
+    const choose = (i: number) => {
+      const it = items[i];
+      if (!it) return;
+      input.value = it.postcode ? `${it.name} (${it.postcode})` : it.name;
+      close();
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+    const search = async (q: string) => {
+      try {
+        const res = await fetch(
+          `${BAN_API}?q=${encodeURIComponent(q)}&type=municipality&limit=7&autocomplete=1`
+        );
+        if (!res.ok) throw new Error('ban');
+        const data = await res.json();
+        items = (data.features || []).map((f: any) => ({
+          name: f.properties.name,
+          postcode: f.properties.postcode || '',
+          citycode: f.properties.citycode || '',
+          context: f.properties.context || '',
+        }));
+        active = -1;
+        render();
+        open();
+      } catch {
+        items = [];
+        close();
+      }
+    };
+
+    input.addEventListener('input', () => {
+      const q = input.value.trim();
+      clearTimeout(timer);
+      if (q.length < 2) {
+        items = [];
+        close();
+        return;
+      }
+      timer = setTimeout(() => search(q), 250);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (list.hidden) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        active = Math.min(active + 1, items.length - 1);
+        render();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        active = Math.max(active - 1, 0);
+        render();
+      } else if (e.key === 'Enter') {
+        if (active >= 0) {
+          e.preventDefault();
+          choose(active);
+        }
+      } else if (e.key === 'Escape') {
+        close();
+      }
+    });
+
+    list.addEventListener('mousedown', (e) => {
+      const li = (e.target as HTMLElement).closest('[data-i]') as HTMLElement | null;
+      if (li) {
+        e.preventDefault();
+        choose(Number(li.dataset.i));
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!root.contains(e.target as Node)) close();
+    });
+  }
+
+  function initAll() {
+    document
+      .querySelectorAll<HTMLElement>('[data-commune-select]')
+      .forEach(initCommuneSelect);
+  }
+
+  initAll();
+  document.addEventListener('astro:page-load', initAll);
+</script>

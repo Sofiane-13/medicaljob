@@ -1,6 +1,6 @@
 export const SITE = {
   name: 'MedicalJob',
-  legalName: 'MedicalJob',
+  legalName: 'AI SOFTWARE CRAFTSMANSHIP',
   domain: 'medicaljob.fr',
   url: 'https://medicaljob.fr',
   defaultLocale: 'fr-FR',
@@ -33,8 +33,8 @@ export const SITE = {
    * à la vue des missions validées).
    */
   supabase: {
-    url: 'https://XXXX.supabase.co',
-    anonKey: 'XXXX',
+    url: 'https://wchzymbgvfjeykcgoetx.supabase.co',
+    anonKey: 'sb_publishable_wL50k4uL712yHFKLGDavdw_TgigIcW8',
   },
 
   /**
@@ -52,16 +52,23 @@ export const SITE = {
    ============================================================ */
 export const LEGAL = {
   societe: {
-    raisonSociale: 'MedicalJob',
-    formeJuridique: 'À compléter',
-    capital: 'À compléter',
-    siren: 'À compléter',
-    siret: 'À compléter',
-    adresse: 'À compléter',
-    codePostal: '',
-    ville: '',
+    raisonSociale: 'AI SOFTWARE CRAFTSMANSHIP',
+    marqueCommerciale: 'MedicalJob',
+    formeJuridique: 'SASU (Société par Actions Simplifiée Unipersonnelle)',
+    capital: '1 000 €',
+    siren: '104 773 387',
+    siret: '104 773 387 00014',
+    tvaIntra: 'FR15 104 773 387',
+    nafCode: '62.01Z',
+    nafLabel: 'Programmation informatique',
+    rcsVille: 'Paris',
+    dateCreation: '7 mai 2026',
+    adresse: '47 rue Vivienne',
+    codePostal: '75002',
+    ville: 'Paris',
     pays: 'France',
-    directeurPublication: 'À compléter',
+    president: 'Sofiane Belhadj Kacem',
+    directeurPublication: 'Sofiane Belhadj Kacem',
   },
   hebergeur: {
     nom: 'Vercel Inc.',

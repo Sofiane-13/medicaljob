@@ -1,27 +1,30 @@
 ---
+import { SITE } from '@data/site';
+
 export type Props = {
-  /** Endpoint Formspree (https://formspree.io/f/xxxx) */
-  endpoint: string;
-  /** Objet de l'email reçu */
-  subject: string;
-  /** id unique du formulaire (pour le script) */
+  /** Table Supabase cible (ex. "besoins", "remplacants") */
+  table: string;
+  /** id unique du formulaire */
   formId: string;
   /** Texte du bouton d'envoi */
   submitLabel?: string;
+  /** Message de succès affiché après envoi */
+  successText?: string;
 };
 
-const { endpoint, subject, formId, submitLabel = 'Envoyer ma demande' } = Astro.props;
-const notConfigured = endpoint.includes('XXXX');
+const {
+  table,
+  formId,
+  submitLabel = 'Envoyer',
+  successText = 'Merci, votre demande a bien été enregistrée. Nous revenons vers vous rapidement.',
+} = Astro.props;
+
+const supabaseUrl = SITE.supabase.url;
+const supabaseKey = SITE.supabase.anonKey;
+const notConfigured = supabaseUrl.includes('XXXX') || supabaseKey.includes('XXXX');
 ---
 
-<form
-  id={formId}
-  class="fs-form"
-  action={endpoint}
-  method="POST"
-  data-not-configured={notConfigured ? 'true' : 'false'}
->
-  <input type="hidden" name="_subject" value={subject} />
+<form id={formId} class="fs-form" data-not-configured={notConfigured ? 'true' : 'false'}>
   <!-- Honeypot anti-spam -->
   <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="fs-honeypot" aria-hidden="true" />
 
@@ -30,17 +33,15 @@ const notConfigured = endpoint.includes('XXXX');
   {
     notConfigured && (
       <p class="fs-warning" role="status">
-        ⚠️ Formulaire non configuré : remplacez l’endpoint Formspree dans
-        <code>src/data/site.ts</code> par votre identifiant (gratuit sur formspree.io).
+        ⚠️ Stockage non configuré : renseignez votre projet Supabase dans
+        <code>src/data/site.ts</code> et exécutez <code>supabase-schema.sql</code>.
       </p>
     )
   }
 
   <button type="submit" class="btn-primary btn-lg fs-submit">{submitLabel}</button>
 
-  <p class="fs-success" hidden role="status">
-    ✅ Merci, votre demande a bien été envoyée. Nous revenons vers vous rapidement.
-  </p>
+  <p class="fs-success" hidden role="status">✅ {successText}</p>
   <p class="fs-error" hidden role="alert">
     Une erreur est survenue. Réessayez ou écrivez-nous directement par email.
   </p>
@@ -99,8 +100,8 @@ const notConfigured = endpoint.includes('XXXX');
   }
 </style>
 
-<script is:inline define:vars={{ formId }}>
-  function initForm() {
+<script is:inline define:vars={{ formId, table, supabaseUrl, supabaseKey }}>
+  function initSupabaseForm() {
     const form = document.getElementById(formId);
     if (!form || form.dataset.bound === 'true') return;
     form.dataset.bound = 'true';
@@ -112,12 +113,27 @@ const notConfigured = endpoint.includes('XXXX');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      // Honeypot : si rempli, on simule le succès sans rien envoyer.
+      if (form.querySelector('[name="_gotcha"]').value) {
+        form.reset();
+        success.hidden = false;
+        return;
+      }
+
       if (form.dataset.notConfigured === 'true') {
         window.alert(
-          'Formulaire non configuré. Crée un formulaire gratuit sur formspree.io et colle son endpoint dans src/data/site.ts.'
+          'Stockage non configuré. Crée un projet Supabase, colle l’URL + la clé anon dans src/data/site.ts, puis exécute supabase-schema.sql.'
         );
         return;
       }
+
+      // Construit la ligne : on ignore les champs techniques (_*) et le consentement.
+      const payload = {};
+      new FormData(form).forEach((value, key) => {
+        if (key.startsWith('_') || key === 'rgpd') return;
+        const v = typeof value === 'string' ? value.trim() : value;
+        payload[key] = v === '' ? null : v;
+      });
 
       success.hidden = true;
       errorEl.hidden = true;
@@ -126,10 +142,15 @@ const notConfigured = endpoint.includes('XXXX');
       submit.textContent = 'Envoi…';
 
       try {
-        const res = await fetch(form.action, {
+        const res = await fetch(`${supabaseUrl}/rest/v1/${table}`, {
           method: 'POST',
-          body: new FormData(form),
-          headers: { Accept: 'application/json' },
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify(payload),
         });
         if (res.ok) {
           form.reset();
@@ -147,6 +168,6 @@ const notConfigured = endpoint.includes('XXXX');
     });
   }
 
-  initForm();
-  document.addEventListener('astro:page-load', initForm);
+  initSupabaseForm();
+  document.addEventListener('astro:page-load', initSupabaseForm);
 </script>

@@ -24,15 +24,17 @@ export const SITE = {
   serviceAreas: ['FR'],
 
   /**
-   * Formspree — un endpoint par face du marché.
-   * Tier gratuit : 50 soumissions/mois par formulaire.
-   * Crée les deux formulaires sur https://formspree.io/forms puis colle les IDs.
+   * Supabase — stockage des publications (besoins) et inscriptions (remplaçants).
+   * 1. Crée un projet gratuit sur https://supabase.com
+   * 2. Settings → API : copie l'URL du projet et la clé "anon public" ci-dessous.
+   * 3. SQL Editor : exécute le contenu de `supabase-schema.sql` (à la racine du repo).
+   * La clé anon est PUBLIQUE par conception : la sécurité est assurée par les
+   * politiques RLS définies dans le schéma (insertion seule, lecture restreinte
+   * à la vue des missions validées).
    */
-  forms: {
-    /** Formulaire "Publier un besoin" (côté établissement / employeur) */
-    etablissementEndpoint: 'https://formspree.io/f/XXXXETAB',
-    /** Formulaire "Je cherche des remplacements" (côté professionnel) */
-    remplacantEndpoint: 'https://formspree.io/f/XXXXREMP',
+  supabase: {
+    url: 'https://XXXX.supabase.co',
+    anonKey: 'XXXX',
   },
 
   /**
@@ -75,10 +77,10 @@ export const LEGAL = {
 
 export const NAV = {
   primary: [
+    { label: 'Missions', href: '/missions' },
     { label: 'Établissements', href: '/etablissements' },
     { label: 'Remplaçants', href: '/remplacants' },
     { label: 'Métiers', href: '/#metiers' },
-    { label: 'Comment ça marche', href: '/comment-ca-marche' },
     { label: 'Blog', href: '/blog' },
   ],
   footer: {
@@ -95,6 +97,7 @@ export const NAV = {
       { label: 'Sage-femme', href: '/metiers/remplacement-sage-femme' },
     ],
     'Ressources': [
+      { label: 'Missions disponibles', href: '/missions' },
       { label: 'Blog', href: '/blog' },
       { label: 'Publier un besoin', href: '/publier-un-besoin' },
       { label: 'S’inscrire comme remplaçant', href: '/inscription-remplacant' },

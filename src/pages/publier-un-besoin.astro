@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
-import FormspreeForm from '@components/forms/FormspreeForm.astro';
+import SupabaseForm from '@components/forms/SupabaseForm.astro';
 import { SITE } from '@data/site';
 import { METIERS } from '@data/metiers';
 import { organization, breadcrumb, buildGraph } from '@lib/schema';
@@ -43,11 +43,11 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
       </aside>
 
       <div class="form-card card" data-reveal>
-        <FormspreeForm
-          endpoint={SITE.forms.etablissementEndpoint}
-          subject="Nouveau besoin de remplacement — MedicalJob"
+        <SupabaseForm
+          table="besoins"
           formId="form-etablissement"
           submitLabel="Publier mon besoin"
+          successText="Votre besoin a bien été enregistré. Il sera publié sur la page Missions après une rapide validation."
         >
           <div class="field">
             <label class="field-label" for="type_etablissement">
@@ -156,7 +156,7 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
               cette mise en relation. <a href="/confidentialite">Politique de confidentialité</a>.
             </span>
           </label>
-        </FormspreeForm>
+        </SupabaseForm>
       </div>
     </div>
   </section>

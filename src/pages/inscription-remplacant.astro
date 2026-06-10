@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
-import FormspreeForm from '@components/forms/FormspreeForm.astro';
+import SupabaseForm from '@components/forms/SupabaseForm.astro';
 import { SITE } from '@data/site';
 import { METIERS } from '@data/metiers';
 import { organization, breadcrumb, buildGraph } from '@lib/schema';
@@ -43,12 +43,14 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
       </aside>
 
       <div class="form-card card" data-reveal>
-        <FormspreeForm
-          endpoint={SITE.forms.remplacantEndpoint}
-          subject="Nouvelle inscription remplaçant — MedicalJob"
+        <SupabaseForm
+          table="remplacants"
           formId="form-remplacant"
           submitLabel="Créer mon profil"
+          successText="Votre profil a bien été enregistré. Nous vous contactons dès qu’une mission correspond."
         >
+          <input type="hidden" name="mission_ref" id="mission_ref" value="" />
+          <p id="mission-note" class="mission-note" hidden></p>
           <div class="field-row cols-2">
             <div class="field">
               <label class="field-label" for="nom">Nom et prénom <span class="req">*</span></label>
@@ -141,10 +143,37 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
               la mise en relation. <a href="/confidentialite">Politique de confidentialité</a>.
             </span>
           </label>
-        </FormspreeForm>
+        </SupabaseForm>
       </div>
     </div>
   </section>
+
+  <script is:inline>
+    function prefillFromMission() {
+      const params = new URLSearchParams(window.location.search);
+      const metier = params.get('metier');
+      const mission = params.get('mission');
+      if (metier) {
+        const select = document.getElementById('metier');
+        if (select) {
+          const match = Array.from(select.options).find((o) => o.value === metier);
+          if (match) select.value = metier;
+        }
+      }
+      if (mission) {
+        const hidden = document.getElementById('mission_ref');
+        const note = document.getElementById('mission-note');
+        if (hidden) hidden.value = mission;
+        if (note) {
+          note.textContent =
+            'Vous répondez à une mission publiée' + (metier ? ` (${metier})` : '') + '. Complétez votre profil pour être mis en relation.';
+          note.hidden = false;
+        }
+      }
+    }
+    prefillFromMission();
+    document.addEventListener('astro:page-load', prefillFromMission);
+  </script>
 </BaseLayout>
 
 <style>
@@ -188,6 +217,14 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
     border: 0;
     border-top: 1px solid var(--color-border);
     margin: 0.25rem 0;
+  }
+  .mission-note {
+    font-size: var(--text-sm);
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+    border: 1px solid #c5dbfb;
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
   }
   @media (min-width: 640px) {
     .form-card {

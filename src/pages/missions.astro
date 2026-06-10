@@ -147,6 +147,19 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  :global(.mission-card:hover) {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-border-strong);
+  }
+  :global(.mission-cta) {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-accent);
   }
   :global(.mission-top) {
     display: flex;
@@ -257,12 +270,10 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
 
     function cardHtml(m) {
       const urgent = (m.type_mission || '').toLowerCase() === 'urgent';
-      const params = new URLSearchParams();
-      if (m.metier) params.set('metier', m.metier);
-      params.set('mission', m.id);
+      const href = `/mission?id=${encodeURIComponent(m.id)}`;
       const lieu = [m.ville, m.type_etablissement].filter(Boolean).map(esc).join(' · ');
       return `
-        <article class="mission-card">
+        <a class="mission-card" href="${href}">
           <div class="mission-top">
             <span class="mission-metier">${esc(m.metier || 'Remplacement')}</span>
             ${m.type_mission ? `<span class="mission-badge ${urgent ? 'urgent' : ''}">${esc(m.type_mission)}</span>` : ''}
@@ -275,9 +286,9 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
           ${m.details ? `<p class="mission-details">${esc(m.details)}</p>` : ''}
           <div class="mission-foot">
             <span class="mission-date">Publié le ${esc(fmtDate(m.created_at) || '')}</span>
-            <a class="btn-primary" href="/inscription-remplacant?${params.toString()}">Répondre</a>
+            <span class="mission-cta">Voir le détail →</span>
           </div>
-        </article>`;
+        </a>`;
     }
 
     const sentinel = document.getElementById('missions-sentinel');

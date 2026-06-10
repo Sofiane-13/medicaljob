@@ -1,0 +1,234 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
+import { SITE } from '@data/site';
+
+const breadcrumbs = [
+  { name: 'Accueil', url: '/' },
+  { name: 'Missions', url: '/missions' },
+  { name: 'Détail', url: '/mission' },
+];
+
+const supabaseUrl = SITE.supabase.url;
+const supabaseKey = SITE.supabase.anonKey;
+const notConfigured = supabaseUrl.includes('XXXX') || supabaseKey.includes('XXXX');
+---
+
+<BaseLayout
+  title="Détail d’une mission de remplacement"
+  description="Détail d’une mission de remplacement publiée par un établissement de santé sur MedicalJob."
+  noindex={true}
+>
+  <Breadcrumbs items={breadcrumbs} />
+
+  <section class="section">
+    <div class="container-content mission-wrap">
+      <a href="/missions" class="back-link">← Retour aux missions</a>
+
+      <div id="mission-detail" aria-live="polite">
+        {
+          notConfigured ? (
+            <div class="card mission-state">
+              <p class="text-muted">Stockage non configuré.</p>
+            </div>
+          ) : (
+            <div class="card mission-state">
+              <p class="text-muted">Chargement de la mission…</p>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .mission-wrap {
+    max-width: 44rem;
+  }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+  .back-link:hover {
+    text-decoration: underline;
+  }
+  .mission-state {
+    padding: 2.5rem;
+    text-align: center;
+  }
+
+  /* Fiche (rendue en JS) */
+  :global(.md-card) {
+    padding: 2rem;
+  }
+  :global(.md-head) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  :global(.md-metier) {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+  }
+  :global(.md-badge) {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-full);
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+  }
+  :global(.md-badge.urgent) {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+  :global(.md-grid) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+  @media (min-width: 560px) {
+    :global(.md-grid) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  :global(.md-item) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+  :global(.md-label) {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-fg-subtle);
+    font-weight: 600;
+  }
+  :global(.md-value) {
+    font-weight: 600;
+    color: var(--color-fg);
+  }
+  :global(.md-details-block) {
+    margin-bottom: 1.75rem;
+  }
+  :global(.md-details-block h2) {
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+  }
+  :global(.md-details-text) {
+    color: var(--color-fg-muted);
+    line-height: 1.65;
+    white-space: pre-line;
+  }
+  :global(.md-actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  @media (max-width: 480px) {
+    :global(.md-actions) {
+      flex-direction: column;
+    }
+    :global(.md-actions a) {
+      width: 100%;
+    }
+  }
+</style>
+
+<script is:inline define:vars={{ supabaseUrl, supabaseKey, notConfigured }}>
+  function initMission() {
+    const box = document.getElementById('mission-detail');
+    if (!box || notConfigured || box.dataset.bound === 'true') return;
+    box.dataset.bound = 'true';
+
+    const esc = (s) =>
+      String(s ?? '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      })[c]);
+
+    const fmtDate = (d) =>
+      d ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(d)) : '';
+
+    function periode(m) {
+      const a = m.date_debut ? fmtDate(m.date_debut) : null;
+      const b = m.date_fin ? fmtDate(m.date_fin) : null;
+      if (a && b) return `${a} → ${b}`;
+      if (a) return `À partir du ${a}`;
+      return 'Dates à convenir';
+    }
+
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) {
+      box.innerHTML =
+        '<div class="card mission-state"><p class="text-muted">Mission introuvable. <a href="/missions">Retour aux missions</a>.</p></div>';
+      return;
+    }
+
+    const notFound = () => {
+      box.innerHTML =
+        '<div class="card mission-state"><h2 class="state-titre">Mission introuvable</h2><p class="text-muted">Cette mission n’est plus disponible. <a href="/missions">Voir les autres missions</a>.</p></div>';
+    };
+
+    fetch(
+      `${supabaseUrl}/rest/v1/missions_publiques?id=eq.${encodeURIComponent(id)}&select=*&limit=1`,
+      { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } }
+    )
+      .then((r) => (r.ok ? r.json() : Promise.reject(r)))
+      .then((data) => {
+        const m = Array.isArray(data) ? data[0] : null;
+        if (!m) {
+          notFound();
+          return;
+        }
+        const urgent = (m.type_mission || '').toLowerCase() === 'urgent';
+        const lieu = [m.ville, m.type_etablissement].filter(Boolean).map(esc).join(' · ');
+        const params = new URLSearchParams();
+        if (m.metier) params.set('metier', m.metier);
+        params.set('mission', m.id);
+
+        const item = (label, value) =>
+          value
+            ? `<div class="md-item"><span class="md-label">${esc(label)}</span><span class="md-value">${esc(value)}</span></div>`
+            : '';
+
+        box.innerHTML = `
+          <article class="card md-card">
+            <div class="md-head">
+              <span class="md-metier">${esc(m.metier || 'Remplacement')}</span>
+              ${m.type_mission ? `<span class="md-badge ${urgent ? 'urgent' : ''}">${esc(m.type_mission)}</span>` : ''}
+            </div>
+            <div class="md-grid">
+              ${item('Lieu', lieu)}
+              ${item('Période', periode(m))}
+              ${item('Rémunération', m.remuneration)}
+              ${item('Publié le', fmtDate(m.created_at))}
+            </div>
+            ${
+              m.details
+                ? `<div class="md-details-block"><h2>Détails du besoin</h2><p class="md-details-text">${esc(m.details)}</p></div>`
+                : ''
+            }
+            <div class="md-actions">
+              <a class="btn-primary btn-lg" href="/inscription-remplacant?${params.toString()}">Répondre à cette mission</a>
+              <a class="btn-secondary btn-lg" href="/missions">Retour aux missions</a>
+            </div>
+          </article>`;
+      })
+      .catch(notFound);
+  }
+
+  initMission();
+  document.addEventListener('astro:page-load', initMission);
+</script>

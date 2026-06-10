@@ -50,6 +50,9 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
           submitLabel="Publier mon besoin"
           successText="Votre besoin a bien été enregistré. Il sera publié sur la page Missions après une rapide validation."
         >
+          <input type="hidden" name="profil_ref" id="profil_ref" value="" />
+          <p id="profil-note" class="profil-note" hidden></p>
+
           <div class="field">
             <label class="field-label" for="type_etablissement">
               Type d’établissement <span class="req">*</span>
@@ -161,6 +164,33 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
       </div>
     </div>
   </section>
+
+  <script is:inline>
+    function prefillBesoin() {
+      const params = new URLSearchParams(window.location.search);
+      const metier = params.get('metier');
+      const profil = params.get('profil');
+      if (metier) {
+        const select = document.getElementById('metier');
+        if (select) {
+          const match = Array.from(select.options).find((o) => o.value === metier);
+          if (match) select.value = metier;
+        }
+      }
+      if (profil) {
+        const hidden = document.getElementById('profil_ref');
+        const note = document.getElementById('profil-note');
+        if (hidden) hidden.value = profil;
+        if (note) {
+          note.textContent =
+            'Vous souhaitez contacter le profil #' + profil + (metier ? ` (${metier})` : '') + '. Décrivez votre besoin, nous organisons la mise en relation.';
+          note.hidden = false;
+        }
+      }
+    }
+    prefillBesoin();
+    document.addEventListener('astro:page-load', prefillBesoin);
+  </script>
 </BaseLayout>
 
 <style>
@@ -204,6 +234,14 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
     border: 0;
     border-top: 1px solid var(--color-border);
     margin: 0.25rem 0;
+  }
+  .profil-note {
+    font-size: var(--text-sm);
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+    border: 1px solid #c5dbfb;
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
   }
   @media (min-width: 640px) {
     .form-card {

@@ -23,6 +23,8 @@ create table if not exists public.besoins (
   contact_nom        text,
   contact_email      text,
   contact_tel        text,
+  -- Référence d'un profil remplaçant que l'établissement souhaite contacter (optionnel)
+  profil_ref         text,
   -- Modération : 'en_attente' (défaut) | 'publie' | 'archive'
   statut             text not null default 'en_attente'
 );
@@ -78,6 +80,19 @@ drop policy if exists "anon_insert_remplacants" on public.remplacants;
 create policy "anon_insert_remplacants"
   on public.remplacants for insert to anon with check (true);
 -- Aucune politique SELECT pour anon => les inscriptions restent privées.
+
+-- ----------------------------------------------------------------
+--  VUE "remplacants_publics" : annuaire des remplaçants disponibles
+--  -> seulement les profils validés, SANS aucune coordonnée (nom, email,
+--     tél, diplôme/RPPS, message). Les établissements parcourent ces profils
+--     anonymisés puis demandent une mise en relation.
+-- ----------------------------------------------------------------
+create or replace view public.remplacants_publics as
+  select id, created_at, metier, zones, disponibilite, type_mission
+  from public.remplacants
+  where statut = 'publie';
+
+grant select on public.remplacants_publics to anon;
 
 -- ============================================================
 --  Modération au quotidien :

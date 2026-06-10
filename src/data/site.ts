@@ -84,14 +84,16 @@ export const LEGAL = {
 
 export const NAV = {
   primary: [
-    { label: 'Missions', href: '/missions' },
-    { label: 'Établissements', href: '/etablissements' },
-    { label: 'Remplaçants', href: '/remplacants' },
+    { label: 'Trouver une mission', href: '/missions' },
+    { label: 'Trouver un remplaçant', href: '/trouver-un-remplacant' },
+    { label: 'Comment ça marche', href: '/comment-ca-marche' },
     { label: 'Métiers', href: '/#metiers' },
     { label: 'Blog', href: '/blog' },
   ],
   footer: {
     'Le service': [
+      { label: 'Trouver une mission', href: '/missions' },
+      { label: 'Trouver un remplaçant', href: '/trouver-un-remplacant' },
       { label: 'Pour les établissements', href: '/etablissements' },
       { label: 'Pour les remplaçants', href: '/remplacants' },
       { label: 'Comment ça marche', href: '/comment-ca-marche' },

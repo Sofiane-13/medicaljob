@@ -1,0 +1,217 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
+import { SITE } from '@data/site';
+
+const breadcrumbs = [
+  { name: 'Accueil', url: '/' },
+  { name: 'Trouver un remplaçant', url: '/trouver-un-remplacant' },
+  { name: 'Profil', url: '/remplacant' },
+];
+
+const supabaseUrl = SITE.supabase.url;
+const supabaseKey = SITE.supabase.anonKey;
+const notConfigured = supabaseUrl.includes('XXXX') || supabaseKey.includes('XXXX');
+---
+
+<BaseLayout
+  title="Profil d’un remplaçant"
+  description="Détail d’un profil de professionnel de santé remplaçant disponible sur MedicalJob."
+  noindex={true}
+>
+  <Breadcrumbs items={breadcrumbs} />
+
+  <section class="section">
+    <div class="container-content profil-wrap">
+      <a href="/trouver-un-remplacant" class="back-link">← Retour à l’annuaire</a>
+
+      <div id="profil-detail" aria-live="polite">
+        {
+          notConfigured ? (
+            <div class="card profil-state">
+              <p class="text-muted">Stockage non configuré.</p>
+            </div>
+          ) : (
+            <div class="card profil-state">
+              <p class="text-muted">Chargement du profil…</p>
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .profil-wrap {
+    max-width: 44rem;
+  }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+  .back-link:hover {
+    text-decoration: underline;
+  }
+  .profil-state {
+    padding: 2.5rem;
+    text-align: center;
+  }
+
+  /* Fiche (rendue en JS) */
+  :global(.profil-detail-card) {
+    padding: 2rem;
+  }
+  :global(.pd-head) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  :global(.pd-metier) {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+  }
+  :global(.pd-dispo) {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-full);
+    background: var(--color-teal-soft);
+    color: var(--color-teal);
+  }
+  :global(.pd-grid) {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+  @media (min-width: 560px) {
+    :global(.pd-grid) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  :global(.pd-item) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+  :global(.pd-label) {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-fg-subtle);
+    font-weight: 600;
+  }
+  :global(.pd-value) {
+    font-weight: 600;
+    color: var(--color-fg);
+  }
+  :global(.pd-note) {
+    font-size: var(--text-sm);
+    color: var(--color-fg-muted);
+    background: var(--color-accent-soft);
+    border: 1px solid #c5dbfb;
+    border-radius: var(--radius-md);
+    padding: 0.875rem 1rem;
+    margin-bottom: 1.75rem;
+  }
+  :global(.pd-actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  @media (max-width: 480px) {
+    :global(.pd-actions) {
+      flex-direction: column;
+    }
+    :global(.pd-actions a) {
+      width: 100%;
+    }
+  }
+</style>
+
+<script is:inline define:vars={{ supabaseUrl, supabaseKey, notConfigured }}>
+  function initProfil() {
+    const box = document.getElementById('profil-detail');
+    if (!box || notConfigured || box.dataset.bound === 'true') return;
+    box.dataset.bound = 'true';
+
+    const esc = (s) =>
+      String(s ?? '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      })[c]);
+
+    const fmtDate = (d) =>
+      d ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(d)) : '';
+
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) {
+      box.innerHTML =
+        '<div class="card profil-state"><p class="text-muted">Profil introuvable. <a href="/trouver-un-remplacant">Retour à l’annuaire</a>.</p></div>';
+      return;
+    }
+
+    const notFound = () => {
+      box.innerHTML =
+        '<div class="card profil-state"><h2 class="state-titre">Profil introuvable</h2><p class="text-muted">Ce profil n’est plus disponible. <a href="/trouver-un-remplacant">Voir les autres remplaçants</a>.</p></div>';
+    };
+
+    fetch(
+      `${supabaseUrl}/rest/v1/remplacants_publics?id=eq.${encodeURIComponent(id)}&select=*&limit=1`,
+      { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } }
+    )
+      .then((r) => (r.ok ? r.json() : Promise.reject(r)))
+      .then((data) => {
+        const p = Array.isArray(data) ? data[0] : null;
+        if (!p) {
+          notFound();
+          return;
+        }
+        const ref = String(p.id || '').slice(0, 8);
+        const params = new URLSearchParams();
+        if (p.metier) params.set('metier', p.metier);
+        params.set('profil', ref);
+
+        const item = (label, value) =>
+          value
+            ? `<div class="pd-item"><span class="pd-label">${esc(label)}</span><span class="pd-value">${esc(value)}</span></div>`
+            : '';
+
+        box.innerHTML = `
+          <article class="card profil-detail-card">
+            <div class="pd-head">
+              <span class="pd-metier">${esc(p.metier || 'Professionnel de santé')}</span>
+              ${p.disponibilite ? `<span class="pd-dispo">${esc(p.disponibilite)}</span>` : ''}
+            </div>
+            <div class="pd-grid">
+              ${item('Zones géographiques', p.zones)}
+              ${item('Disponibilité', p.disponibilite)}
+              ${item('Type de mission', p.type_mission)}
+              ${item('Profil ajouté le', fmtDate(p.created_at))}
+            </div>
+            <p class="pd-note">
+              Les coordonnées de ce professionnel restent protégées. Décrivez votre besoin :
+              nous organisons la mise en relation. Référence du profil : #${esc(ref)}.
+            </p>
+            <div class="pd-actions">
+              <a class="btn-primary btn-lg" href="/publier-un-besoin?${params.toString()}">Contacter ce profil</a>
+              <a class="btn-secondary btn-lg" href="/trouver-un-remplacant">Retour à l’annuaire</a>
+            </div>
+          </article>`;
+      })
+      .catch(notFound);
+  }
+
+  initProfil();
+  document.addEventListener('astro:page-load', initProfil);
+</script>

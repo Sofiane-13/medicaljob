@@ -25,8 +25,9 @@ create table if not exists public.besoins (
   contact_tel        text,
   -- Référence d'un profil remplaçant que l'établissement souhaite contacter (optionnel)
   profil_ref         text,
-  -- Modération : 'en_attente' (défaut) | 'publie' | 'archive'
-  statut             text not null default 'en_attente'
+  -- 'publie' par défaut : les besoins apparaissent sur /missions sans modération.
+  -- Pour retirer un besoin, passe son statut à 'archive'.
+  statut             text not null default 'publie'
 );
 
 alter table public.besoins enable row level security;

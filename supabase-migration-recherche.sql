@@ -20,6 +20,10 @@ grant select on public.remplacants_publics to anon;
 alter table public.remplacants alter column statut set default 'publie';
 update public.remplacants set statut = 'publie' where statut = 'nouveau';
 
+-- 4) Affichage automatique des besoins sur /missions (sans modération)
+alter table public.besoins alter column statut set default 'publie';
+update public.besoins set statut = 'publie' where statut = 'en_attente';
+
 -- ============================================================
 --  Pour RETIRER un profil de l'annuaire : passe son "statut" à 'archive'
 --  dans Table Editor → remplacants (modération a posteriori).

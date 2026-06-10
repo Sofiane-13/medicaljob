@@ -1,0 +1,40 @@
+---
+export type Props = { hidden?: boolean };
+const { hidden = false } = Astro.props;
+---
+
+{
+  !hidden && (
+    <div class="floating-cta" aria-hidden="false">
+      <a href="/publier-un-besoin" class="btn-primary">Publier un besoin</a>
+      <a href="/inscription-remplacant" class="btn-secondary">Trouver une mission</a>
+    </div>
+  )
+}
+
+<style>
+  .floating-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    display: flex;
+    gap: 0.625rem;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid var(--color-border);
+  }
+  .floating-cta a {
+    flex: 1;
+    padding-block: 0.75rem;
+    font-size: var(--text-sm);
+  }
+  @media (min-width: 1024px) {
+    .floating-cta {
+      display: none;
+    }
+  }
+</style>

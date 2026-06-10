@@ -1,0 +1,152 @@
+---
+export type Props = {
+  /** Endpoint Formspree (https://formspree.io/f/xxxx) */
+  endpoint: string;
+  /** Objet de l'email reçu */
+  subject: string;
+  /** id unique du formulaire (pour le script) */
+  formId: string;
+  /** Texte du bouton d'envoi */
+  submitLabel?: string;
+};
+
+const { endpoint, subject, formId, submitLabel = 'Envoyer ma demande' } = Astro.props;
+const notConfigured = endpoint.includes('XXXX');
+---
+
+<form
+  id={formId}
+  class="fs-form"
+  action={endpoint}
+  method="POST"
+  data-not-configured={notConfigured ? 'true' : 'false'}
+>
+  <input type="hidden" name="_subject" value={subject} />
+  <!-- Honeypot anti-spam -->
+  <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="fs-honeypot" aria-hidden="true" />
+
+  <slot />
+
+  {
+    notConfigured && (
+      <p class="fs-warning" role="status">
+        ⚠️ Formulaire non configuré : remplacez l’endpoint Formspree dans
+        <code>src/data/site.ts</code> par votre identifiant (gratuit sur formspree.io).
+      </p>
+    )
+  }
+
+  <button type="submit" class="btn-primary btn-lg fs-submit">{submitLabel}</button>
+
+  <p class="fs-success" hidden role="status">
+    ✅ Merci, votre demande a bien été envoyée. Nous revenons vers vous rapidement.
+  </p>
+  <p class="fs-error" hidden role="alert">
+    Une erreur est survenue. Réessayez ou écrivez-nous directement par email.
+  </p>
+</form>
+
+<style>
+  .fs-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .fs-honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+  .fs-submit {
+    margin-top: 0.5rem;
+    align-self: flex-start;
+  }
+  .fs-warning {
+    font-size: var(--text-sm);
+    color: #92400e;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: var(--radius-md);
+    padding: 0.875rem 1rem;
+  }
+  .fs-warning code {
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+  }
+  .fs-success {
+    font-size: var(--text-base);
+    color: #065f46;
+    background: var(--color-teal-soft);
+    border: 1px solid #99e5d8;
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+  }
+  .fs-error {
+    font-size: var(--text-sm);
+    color: #991b1b;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-md);
+    padding: 0.875rem 1rem;
+  }
+  @media (max-width: 480px) {
+    .fs-submit {
+      align-self: stretch;
+      width: 100%;
+    }
+  }
+</style>
+
+<script is:inline define:vars={{ formId }}>
+  function initForm() {
+    const form = document.getElementById(formId);
+    if (!form || form.dataset.bound === 'true') return;
+    form.dataset.bound = 'true';
+
+    const success = form.querySelector('.fs-success');
+    const errorEl = form.querySelector('.fs-error');
+    const submit = form.querySelector('.fs-submit');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (form.dataset.notConfigured === 'true') {
+        window.alert(
+          'Formulaire non configuré. Crée un formulaire gratuit sur formspree.io et colle son endpoint dans src/data/site.ts.'
+        );
+        return;
+      }
+
+      success.hidden = true;
+      errorEl.hidden = true;
+      submit.disabled = true;
+      const originalLabel = submit.textContent;
+      submit.textContent = 'Envoi…';
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { Accept: 'application/json' },
+        });
+        if (res.ok) {
+          form.reset();
+          success.hidden = false;
+          success.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          errorEl.hidden = false;
+        }
+      } catch (err) {
+        errorEl.hidden = false;
+      } finally {
+        submit.disabled = false;
+        submit.textContent = originalLabel;
+      }
+    });
+  }
+
+  initForm();
+  document.addEventListener('astro:page-load', initForm);
+</script>

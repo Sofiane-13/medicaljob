@@ -1,0 +1,162 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
+import CtaBand from '@components/ui/CtaBand.astro';
+import { organization, breadcrumb, buildGraph } from '@lib/schema';
+
+const breadcrumbs = [
+  { name: 'Accueil', url: '/' },
+  { name: 'Comment ça marche', url: '/comment-ca-marche' },
+];
+
+const cotes = [
+  {
+    titre: 'Côté établissement',
+    couleur: 'accent',
+    etapes: [
+      'Publiez votre besoin : métier, dates, lieu et conditions.',
+      'Recevez les candidatures des remplaçants correspondants.',
+      'Échangez en direct et convenez du contrat de remplacement.',
+    ],
+    cta: { label: 'Publier un besoin', href: '/publier-un-besoin' },
+  },
+  {
+    titre: 'Côté remplaçant',
+    couleur: 'teal',
+    etapes: [
+      'Créez votre profil : métier, diplômes, zones et disponibilités.',
+      'Soyez notifié dès qu’une mission correspond à vos critères.',
+      'Contactez l’établissement et fixez ensemble les modalités.',
+    ],
+    cta: { label: 'Créer mon profil', href: '/inscription-remplacant' },
+  },
+];
+
+const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
+---
+
+<BaseLayout
+  title="Comment fonctionne MedicalJob"
+  description="Découvrez comment MedicalJob met en relation établissements de santé et professionnels remplaçants : publication du besoin, mise en relation et mise en place du remplacement."
+  jsonLd={jsonLd}
+>
+  <Breadcrumbs items={breadcrumbs} />
+
+  <section class="section">
+    <div class="container-content page-hero">
+      <div data-reveal>
+        <span class="eyebrow">Comment ça marche</span>
+        <h1 class="h-display">Une mise en relation simple, des deux côtés</h1>
+        <p class="lede page-hero-lede">
+          MedicalJob rapproche les besoins des établissements et les disponibilités des
+          remplaçants. Vous gardez toujours la main sur le contrat et les conditions.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft">
+    <div class="container-content">
+      <div class="grid-2">
+        {cotes.map((c) => (
+          <article class={`card cote cote-${c.couleur}`} data-reveal>
+            <h2 class="cote-titre">{c.titre}</h2>
+            <ol class="cote-etapes">
+              {c.etapes.map((e, i) => (
+                <li>
+                  <span class="cote-num">{i + 1}</span>
+                  <span>{e}</span>
+                </li>
+              ))}
+            </ol>
+            <a
+              href={c.cta.href}
+              class={c.couleur === 'teal' ? 'btn-secondary btn-block' : 'btn-primary btn-block'}
+            >
+              {c.cta.label}
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container-content note-wrap">
+      <div class="card note" data-reveal>
+        <h2 class="note-titre">Un cadre clair</h2>
+        <p class="text-muted">
+          MedicalJob est un <strong>service de mise en relation</strong>. Nous ne sommes pas
+          l’employeur des professionnels et n’intervenons pas dans le contrat de remplacement,
+          la rémunération ni le statut (salarié ou libéral). Chaque partie reste responsable du
+          respect de ses obligations ordinales, conventionnelles et légales.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .page-hero {
+    max-width: 46rem;
+  }
+  .page-hero-lede {
+    margin-top: 1.25rem;
+  }
+  .cote {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .cote-accent {
+    border-top: 3px solid var(--color-accent);
+  }
+  .cote-teal {
+    border-top: 3px solid var(--color-teal);
+  }
+  .cote-titre {
+    font-size: 1.375rem;
+    margin-bottom: 1.5rem;
+  }
+  .cote-etapes {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex: 1;
+  }
+  .cote-etapes li {
+    display: flex;
+    gap: 0.875rem;
+    align-items: flex-start;
+    color: var(--color-fg-muted);
+  }
+  .cote-num {
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    font-weight: 700;
+    font-size: var(--text-sm);
+  }
+  .cote-teal .cote-num {
+    background: var(--color-teal-soft);
+    color: var(--color-teal);
+  }
+  .note-wrap {
+    max-width: 52rem;
+  }
+  .note {
+    padding: 2rem;
+  }
+  .note-titre {
+    font-size: 1.375rem;
+    margin-bottom: 0.75rem;
+  }
+</style>

@@ -1,0 +1,49 @@
+---
+import LegalLayout from '@components/legal/LegalLayout.astro';
+import { SITE, LEGAL } from '@data/site';
+---
+
+<LegalLayout
+  title="Conditions générales d’utilisation"
+  description="Conditions générales d’utilisation du service de mise en relation MedicalJob."
+  maj={LEGAL.dateMaj}
+>
+  <p>
+    Les présentes conditions générales d’utilisation (CGU) régissent l’accès et l’utilisation du
+    site {SITE.name}. En utilisant le site, vous acceptez ces conditions.
+  </p>
+
+  <h2>Objet du service</h2>
+  <p>
+    {SITE.name} est une plateforme de <strong>mise en relation</strong> entre établissements de santé
+    et professionnels de santé remplaçants. Le service facilite la rencontre des besoins et des
+    disponibilités, sans se substituer aux parties dans la conclusion des contrats.
+  </p>
+
+  <h2>Responsabilités des utilisateurs</h2>
+  <ul>
+    <li>Fournir des informations exactes et à jour.</li>
+    <li>Respecter les obligations ordinales, réglementaires et conventionnelles de sa profession.</li>
+    <li>Vérifier les qualifications et autorisations d’exercice de l’autre partie.</li>
+    <li>Conclure et exécuter le contrat de remplacement dans le respect de la loi.</li>
+  </ul>
+
+  <h2>Rôle et limites de responsabilité de {SITE.name}</h2>
+  <p>
+    {SITE.name} n’est pas l’employeur des professionnels et n’est pas partie aux contrats de
+    remplacement. {SITE.name} ne saurait être tenu responsable des relations contractuelles, des
+    prestations réalisées, ni des litiges entre établissements et remplaçants.
+  </p>
+
+  <h2>Disponibilité</h2>
+  <p>
+    {SITE.name} s’efforce d’assurer la disponibilité du service mais ne garantit pas une absence
+    totale d’interruption.
+  </p>
+
+  <h2>Contact</h2>
+  <p>
+    Pour toute question relative aux présentes CGU :
+    <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+  </p>
+</LegalLayout>

@@ -1,0 +1,47 @@
+---
+import LegalLayout from '@components/legal/LegalLayout.astro';
+import { SITE, LEGAL } from '@data/site';
+---
+
+<LegalLayout
+  title="Mentions légales"
+  description="Mentions légales du site MedicalJob, service de mise en relation pour les remplacements en santé."
+  maj={LEGAL.dateMaj}
+>
+  <p>
+    Les présentes mentions légales sont à compléter avec les informations définitives de
+    l’éditeur avant la mise en ligne du site.
+  </p>
+
+  <h2>Éditeur du site</h2>
+  <p>
+    <strong>{LEGAL.societe.raisonSociale}</strong><br />
+    Forme juridique : {LEGAL.societe.formeJuridique}<br />
+    Capital social : {LEGAL.societe.capital}<br />
+    SIREN : {LEGAL.societe.siren} — SIRET : {LEGAL.societe.siret}<br />
+    Siège social : {LEGAL.societe.adresse}, {LEGAL.societe.codePostal} {LEGAL.societe.ville}, {LEGAL.societe.pays}<br />
+    Directeur de la publication : {LEGAL.societe.directeurPublication}<br />
+    Contact : <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+  </p>
+
+  <h2>Hébergeur</h2>
+  <p>
+    <strong>{LEGAL.hebergeur.nom}</strong><br />
+    {LEGAL.hebergeur.adresse}<br />
+    <a href={LEGAL.hebergeur.siteWeb} rel="noopener" target="_blank">{LEGAL.hebergeur.siteWeb}</a>
+  </p>
+
+  <h2>Nature du service</h2>
+  <p>
+    {SITE.name} est un <strong>service de mise en relation</strong> entre des établissements de
+    santé (hôpitaux, cliniques, EHPAD, cabinets, officines) et des professionnels de santé
+    remplaçants. {SITE.name} n’est pas l’employeur des professionnels et n’intervient pas dans
+    la conclusion ni l’exécution des contrats de remplacement.
+  </p>
+
+  <h2>Propriété intellectuelle</h2>
+  <p>
+    L’ensemble des contenus présents sur ce site (textes, visuels, logos, structure) est protégé
+    par le droit de la propriété intellectuelle. Toute reproduction sans autorisation est interdite.
+  </p>
+</LegalLayout>

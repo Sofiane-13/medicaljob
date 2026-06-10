@@ -1,0 +1,40 @@
+---
+import type { Faq } from '@data/metiers';
+
+export type Props = {
+  items: Faq[];
+  titre?: string;
+  eyebrow?: string;
+  soft?: boolean;
+};
+
+const { items, titre = 'Questions fréquentes', eyebrow = 'FAQ', soft = false } = Astro.props;
+---
+
+<section class={soft ? 'section bg-soft' : 'section'}>
+  <div class="container-content faq-wrap">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">{eyebrow}</span>
+      <h2 class="h-section">{titre}</h2>
+    </div>
+    <div class="faq-list" data-reveal>
+      {
+        items.map((item) => (
+          <details class="faq-item">
+            <summary>{item.q}</summary>
+            <div class="faq-answer">{item.a}</div>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-wrap {
+    max-width: 52rem;
+  }
+  .section-head {
+    margin-bottom: 2rem;
+  }
+</style>

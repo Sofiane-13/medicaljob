@@ -1,0 +1,38 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page introuvable" description="La page que vous cherchez n'existe pas ou a été déplacée." noindex={true}>
+  <section class="section">
+    <div class="container-content notfound" data-reveal>
+      <span class="eyebrow">Erreur 404</span>
+      <h1 class="h-display">Cette page est introuvable</h1>
+      <p class="lede notfound-lede">
+        Le lien est peut-être erroné ou la page a été déplacée. Reprenons depuis le début.
+      </p>
+      <div class="notfound-actions">
+        <a href="/" class="btn-primary btn-lg">Retour à l’accueil</a>
+        <a href="/publier-un-besoin" class="btn-secondary btn-lg">Publier un besoin</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .notfound {
+    max-width: 40rem;
+    text-align: center;
+    margin-inline: auto;
+    padding-block: clamp(2rem, 6vw, 5rem);
+  }
+  .notfound-lede {
+    margin-top: 1rem;
+  }
+  .notfound-actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.875rem;
+    justify-content: center;
+  }
+</style>

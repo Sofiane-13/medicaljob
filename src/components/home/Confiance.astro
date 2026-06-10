@@ -1,0 +1,66 @@
+---
+const points = [
+  {
+    icone: '🔒',
+    titre: 'Vos données protégées',
+    desc: 'Conforme au RGPD. Vos coordonnées ne sont partagées qu’avec la partie concernée par la mise en relation.',
+  },
+  {
+    icone: '🎯',
+    titre: 'Des profils ciblés',
+    desc: 'Filtrage par métier, cadre d’exercice et zone géographique pour des mises en relation pertinentes.',
+  },
+  {
+    icone: '⚡',
+    titre: 'Pensé pour l’urgence',
+    desc: 'Un besoin de dernière minute ? Publiez-le et touchez immédiatement les remplaçants disponibles à proximité.',
+  },
+  {
+    icone: '🤝',
+    titre: 'Vous gardez la main',
+    desc: 'MedicalJob facilite la rencontre. Le contrat, la rémunération et les conditions restent décidés entre vous.',
+  },
+];
+---
+
+<section class="section bg-soft">
+  <div class="container-content">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">Pourquoi MedicalJob</span>
+      <h2 class="h-section">Une mise en relation simple et de confiance</h2>
+    </div>
+    <div class="grid-4">
+      {
+        points.map((p) => (
+          <article class="conf-card" data-reveal>
+            <span class="conf-icone" aria-hidden="true">{p.icone}</span>
+            <h3 class="conf-titre">{p.titre}</h3>
+            <p class="text-muted conf-desc">{p.desc}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .section-head {
+    max-width: 40rem;
+    margin-bottom: 3rem;
+  }
+  .conf-card {
+    padding: 1.5rem;
+  }
+  .conf-icone {
+    font-size: 1.75rem;
+    display: block;
+    margin-bottom: 0.875rem;
+  }
+  .conf-titre {
+    font-size: 1.0625rem;
+    margin-bottom: 0.5rem;
+  }
+  .conf-desc {
+    font-size: var(--text-sm);
+  }
+</style>

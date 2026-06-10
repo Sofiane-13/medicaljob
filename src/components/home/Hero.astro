@@ -1,0 +1,172 @@
+---
+// Hero de la landing — double promesse (établissements / remplaçants)
+---
+
+<section class="hero">
+  <div class="container-content hero-inner">
+    <div class="hero-content">
+      <span class="badge" data-reveal>● Médecins · Infirmiers · Pharmaciens · Sages-femmes · Préparateurs</span>
+      <h1 class="hero-title" data-reveal>
+        Trouvez un <span class="accent">remplacement</span>,<br />
+        ou un <span class="accent">remplaçant</span>, en santé.
+      </h1>
+      <p class="hero-lede lede" data-reveal>
+        MedicalJob met en relation les hôpitaux, cliniques, EHPAD, cabinets et officines
+        avec des professionnels de santé remplaçants disponibles. Publiez un besoin ou
+        trouvez votre prochaine mission — partout en France.
+      </p>
+      <div class="hero-actions" data-reveal>
+        <a href="/publier-un-besoin" class="btn-primary btn-lg">
+          J’ai besoin d’un remplaçant
+        </a>
+        <a href="/inscription-remplacant" class="btn-secondary btn-lg">
+          Je cherche des remplacements
+        </a>
+      </div>
+      <ul class="hero-proof" data-reveal>
+        <li><strong>Gratuit</strong> pour les remplaçants</li>
+        <li><strong>Sans engagement</strong> pour les établissements</li>
+        <li><strong>Réponse rapide</strong> aux besoins urgents</li>
+      </ul>
+    </div>
+
+    <div class="hero-cards" aria-hidden="true">
+      <div class="mini-card mc-1" data-reveal>
+        <span class="mc-icone">🏥</span>
+        <div>
+          <p class="mc-titre">Clinique du Parc</p>
+          <p class="mc-sub">Cherche un IDE · 3 jours · urgent</p>
+        </div>
+      </div>
+      <div class="mini-card mc-2" data-reveal>
+        <span class="mc-icone">⚕️</span>
+        <div>
+          <p class="mc-titre">Pharmacien remplaçant</p>
+          <p class="mc-sub">Disponible · Lyon & alentours</p>
+        </div>
+      </div>
+      <div class="mini-card mc-3" data-reveal>
+        <span class="mc-icone">🩺</span>
+        <div>
+          <p class="mc-titre">EHPAD Les Tilleuls</p>
+          <p class="mc-sub">Médecin coordonnateur · 2 semaines</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    background:
+      radial-gradient(60% 60% at 80% 0%, var(--color-bg-tint) 0%, transparent 70%),
+      linear-gradient(180deg, var(--color-bg-soft) 0%, var(--color-bg) 100%);
+    padding-block: clamp(3rem, 7vw, 6rem);
+  }
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+  @media (min-width: 1024px) {
+    .hero-inner {
+      grid-template-columns: 1.15fr 0.85fr;
+    }
+  }
+  .hero-title {
+    font-size: clamp(2.125rem, 5.5vw, 3.75rem);
+    line-height: 1.06;
+    margin: 1.25rem 0 0;
+  }
+  .accent {
+    color: var(--color-accent);
+  }
+  .hero-lede {
+    margin-top: 1.5rem;
+    max-width: 36rem;
+  }
+  .hero-actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.875rem;
+  }
+  @media (max-width: 480px) {
+    .hero-actions {
+      flex-direction: column;
+    }
+    .hero-actions a {
+      width: 100%;
+    }
+  }
+  .hero-proof {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    font-size: var(--text-sm);
+    color: var(--color-fg-muted);
+  }
+  .hero-proof li {
+    position: relative;
+    padding-left: 1.25rem;
+  }
+  .hero-proof li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--color-teal);
+    font-weight: 700;
+  }
+
+  /* Mini-cards illustratives */
+  .hero-cards {
+    display: none;
+    position: relative;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  @media (min-width: 1024px) {
+    .hero-cards {
+      display: flex;
+    }
+  }
+  .mini-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.125rem 1.25rem;
+    box-shadow: var(--shadow-md);
+  }
+  .mc-1 {
+    margin-right: 2.5rem;
+  }
+  .mc-2 {
+    margin-left: 3rem;
+  }
+  .mc-3 {
+    margin-right: 1rem;
+  }
+  .mc-icone {
+    font-size: 1.75rem;
+    width: 3rem;
+    height: 3rem;
+    display: grid;
+    place-items: center;
+    background: var(--color-bg-tint);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+  }
+  .mc-titre {
+    font-weight: 600;
+    color: var(--color-fg);
+  }
+  .mc-sub {
+    font-size: var(--text-sm);
+    color: var(--color-fg-subtle);
+  }
+</style>

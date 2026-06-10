@@ -1,0 +1,228 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
+import FaqSection from '@components/ui/FaqSection.astro';
+import CtaBand from '@components/ui/CtaBand.astro';
+import { VILLES, type Ville } from '@data/villes';
+import { METIERS } from '@data/metiers';
+import {
+  organization,
+  serviceVille,
+  faqPage,
+  breadcrumb,
+  buildGraph,
+} from '@lib/schema';
+
+export function getStaticPaths() {
+  return VILLES.map((v) => ({
+    params: { ville: v.slug },
+    props: { ville: v },
+  }));
+}
+
+type Props = { ville: Ville };
+const { ville } = Astro.props as Props;
+
+const breadcrumbs = [
+  { name: 'Accueil', url: '/' },
+  { name: `Remplacements à ${ville.nom}`, url: `/remplacement/${ville.slug}` },
+];
+
+const faqs = [
+  {
+    q: `Comment trouver un remplaçant à ${ville.nom} ?`,
+    a: `Publiez votre besoin sur MedicalJob en précisant le métier, les dates et le lieu à ${ville.nom}. Les professionnels remplaçants disponibles dans le secteur sont mis en relation avec vous.`,
+  },
+  {
+    q: `Quels métiers de santé sont concernés à ${ville.nom} ?`,
+    a: `Médecins, infirmiers, sages-femmes, pharmaciens et préparateurs en pharmacie, aussi bien en établissement (hôpital, clinique, EHPAD) qu’en officine, sur ${ville.nom} et en ${ville.region}.`,
+  },
+  {
+    q: `L’inscription est-elle gratuite pour les remplaçants à ${ville.nom} ?`,
+    a: `Oui. Les professionnels de santé remplaçants s’inscrivent gratuitement et reçoivent des missions ciblées sur ${ville.nom} et ses environs.`,
+  },
+];
+
+const jsonLd = buildGraph(
+  organization(),
+  breadcrumb(breadcrumbs),
+  serviceVille(ville),
+  faqPage(faqs)
+);
+---
+
+<BaseLayout
+  title={`Remplacement médical et en pharmacie à ${ville.nom}`}
+  description={`Trouvez un remplaçant ou une mission de remplacement (médecin, infirmier, pharmacien, sage-femme) à ${ville.nom}. Publiez votre besoin ou inscrivez-vous gratuitement sur MedicalJob.`}
+  jsonLd={jsonLd}
+>
+  <Breadcrumbs items={breadcrumbs} />
+
+  <section class="section">
+    <div class="container-content ville-hero">
+      <div data-reveal>
+        <span class="badge">📍 {ville.nom} · {ville.region}</span>
+        <h1 class="h-display ville-h1">
+          Remplacements en santé à {ville.nom}
+        </h1>
+        <p class="lede ville-intro">
+          {ville.contexte} MedicalJob met en relation les établissements de {ville.nom} et
+          les professionnels de santé remplaçants : médecins, infirmiers, pharmaciens,
+          sages-femmes et préparateurs.
+        </p>
+        <div class="ville-actions">
+          <a href="/publier-un-besoin" class="btn-primary btn-lg">Publier un besoin à {ville.nom}</a>
+          <a href="/inscription-remplacant" class="btn-secondary btn-lg">Trouver une mission</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft">
+    <div class="container-content">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Par métier</span>
+        <h2 class="h-section">Quel remplacement cherchez-vous à {ville.nom} ?</h2>
+      </div>
+      <div class="metiers-grid grid-3">
+        {
+          METIERS.map((m) => (
+            <a href={`/metiers/${m.slug}`} class="metier-card card card-hover" data-reveal>
+              <span class="metier-icone" aria-hidden="true">{m.icone}</span>
+              <h3 class="metier-nom">Remplacement {m.nom.toLowerCase()}</h3>
+              <span class="metier-link">En savoir plus →</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container-content ville-prose">
+      <div class="prose" data-reveal>
+        <h2 class="prose-h2">Pourquoi MedicalJob à {ville.nom}</h2>
+        <p>
+          Le secteur de la santé à {ville.nom} et en {ville.region} fait face, comme partout en
+          France, à un besoin régulier de remplacements : congés, absences, pics d’activité et
+          postes vacants. MedicalJob facilite la rencontre entre les structures qui recrutent et
+          les professionnels disponibles localement.
+        </p>
+        <p>
+          Pour un établissement, publier un besoin prend deux minutes et permet de toucher
+          rapidement les remplaçants du bassin de {ville.nom}. Pour un professionnel, l’inscription
+          gratuite ouvre l’accès à des missions ciblées sur sa zone et ses disponibilités.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <FaqSection items={faqs} titre={`Remplacements à ${ville.nom} : vos questions`} soft={true} />
+
+  <section class="section">
+    <div class="container-content">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Autres villes</span>
+        <h2 class="h-section">MedicalJob près de chez vous</h2>
+      </div>
+      <ul class="villes-list" data-reveal>
+        {
+          VILLES.filter((v) => v.slug !== ville.slug).map((v) => (
+            <li>
+              <a href={`/remplacement/${v.slug}`} class="ville-chip">{v.nom}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand titre={`Un remplacement à organiser à ${ville.nom} ?`} />
+</BaseLayout>
+
+<style>
+  .ville-hero {
+    max-width: 48rem;
+  }
+  .ville-h1 {
+    font-size: clamp(1.875rem, 4vw, 2.75rem);
+    margin-top: 1rem;
+  }
+  .ville-intro {
+    margin-top: 1.25rem;
+  }
+  .ville-actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.875rem;
+  }
+  .section-head {
+    max-width: 40rem;
+    margin-bottom: 2.5rem;
+  }
+  .metier-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 1.75rem;
+  }
+  .metier-icone {
+    font-size: 2rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    display: grid;
+    place-items: center;
+    background: var(--color-bg-tint);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.75rem;
+  }
+  .metier-nom {
+    font-size: 1.1875rem;
+  }
+  .metier-link {
+    margin-top: 1rem;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+  .ville-prose {
+    max-width: 46rem;
+  }
+  .prose-h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin-bottom: 1.25rem;
+  }
+  .prose p {
+    margin-bottom: 1.25rem;
+    color: var(--color-fg-muted);
+    line-height: 1.75;
+  }
+  .villes-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+  }
+  .ville-chip {
+    display: inline-block;
+    background: var(--color-bg-tint);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    padding: 0.5rem 1rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .ville-chip:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  @media (max-width: 480px) {
+    .ville-actions {
+      flex-direction: column;
+    }
+    .ville-actions a {
+      width: 100%;
+    }
+  }
+</style>

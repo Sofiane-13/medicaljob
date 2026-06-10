@@ -1,0 +1,212 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
+import FormspreeForm from '@components/forms/FormspreeForm.astro';
+import { SITE } from '@data/site';
+import { METIERS } from '@data/metiers';
+import { organization, breadcrumb, buildGraph } from '@lib/schema';
+
+const breadcrumbs = [
+  { name: 'Accueil', url: '/' },
+  { name: 'Publier un besoin', url: '/publier-un-besoin' },
+];
+
+const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
+---
+
+<BaseLayout
+  title="Publier un besoin de remplacement"
+  description="Décrivez votre besoin de remplacement (médecin, infirmier, pharmacien, sage-femme, préparateur) et recevez des candidatures de professionnels disponibles près de chez vous."
+  jsonLd={jsonLd}
+  hideFloatingCta={true}
+>
+  <Breadcrumbs items={breadcrumbs} />
+
+  <section class="section">
+    <div class="container-content form-layout">
+      <aside class="form-aside" data-reveal>
+        <span class="badge">Établissements & employeurs</span>
+        <h1 class="form-title">Publier un besoin de remplacement</h1>
+        <p class="text-muted form-intro">
+          Renseignez votre besoin en quelques champs. Nous le diffusons aux professionnels
+          remplaçants correspondants et vous mettons en relation.
+        </p>
+        <ul class="check-list form-points">
+          <li>Diffusion ciblée par métier et par zone</li>
+          <li>Idéal pour les remplacements urgents</li>
+          <li>Sans engagement</li>
+          <li>Vos coordonnées restent confidentielles</li>
+        </ul>
+        <p class="form-contact text-subtle">
+          Une question ? <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        </p>
+      </aside>
+
+      <div class="form-card card" data-reveal>
+        <FormspreeForm
+          endpoint={SITE.forms.etablissementEndpoint}
+          subject="Nouveau besoin de remplacement — MedicalJob"
+          formId="form-etablissement"
+          submitLabel="Publier mon besoin"
+        >
+          <div class="field">
+            <label class="field-label" for="type_etablissement">
+              Type d’établissement <span class="req">*</span>
+            </label>
+            <select id="type_etablissement" name="type_etablissement" class="select" required>
+              <option value="" disabled selected>Sélectionnez…</option>
+              <option>Hôpital / CHU</option>
+              <option>Clinique privée</option>
+              <option>EHPAD / maison de retraite</option>
+              <option>Cabinet médical</option>
+              <option>Officine de pharmacie</option>
+              <option>Centre / maison de santé</option>
+              <option>Autre</option>
+            </select>
+          </div>
+
+          <div class="field-row cols-2">
+            <div class="field">
+              <label class="field-label" for="nom_structure">
+                Nom de la structure <span class="req">*</span>
+              </label>
+              <input id="nom_structure" name="nom_structure" class="input" type="text" required />
+            </div>
+            <div class="field">
+              <label class="field-label" for="ville">Ville <span class="req">*</span></label>
+              <input id="ville" name="ville" class="input" type="text" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="metier">
+              Métier recherché <span class="req">*</span>
+            </label>
+            <select id="metier" name="metier" class="select" required>
+              <option value="" disabled selected>Sélectionnez…</option>
+              {METIERS.map((m) => <option value={m.nom}>{m.nom}</option>)}
+              <option>Autre</option>
+            </select>
+          </div>
+
+          <div class="field-row cols-2">
+            <div class="field">
+              <label class="field-label" for="date_debut">Date de début</label>
+              <input id="date_debut" name="date_debut" class="input" type="date" />
+            </div>
+            <div class="field">
+              <label class="field-label" for="date_fin">Date de fin</label>
+              <input id="date_fin" name="date_fin" class="input" type="date" />
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Type de mission</span>
+            <div class="radio-group">
+              <label class="radio-chip"><input type="radio" name="type_mission" value="Ponctuel" />Ponctuel</label>
+              <label class="radio-chip"><input type="radio" name="type_mission" value="Récurrent" />Récurrent</label>
+              <label class="radio-chip"><input type="radio" name="type_mission" value="Longue durée" />Longue durée</label>
+              <label class="radio-chip"><input type="radio" name="type_mission" value="Urgent" />Urgent</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="remuneration">Rémunération indicative</label>
+            <input
+              id="remuneration"
+              name="remuneration"
+              class="input"
+              type="text"
+              placeholder="Ex. rétrocession 80 %, ou tarif/jour"
+            />
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="details">Détails du besoin</label>
+            <textarea
+              id="details"
+              name="details"
+              class="textarea"
+              placeholder="Horaires, logiciel utilisé, compétences attendues, contexte…"
+            ></textarea>
+          </div>
+
+          <hr class="form-sep" />
+
+          <div class="field-row cols-2">
+            <div class="field">
+              <label class="field-label" for="contact_nom">Votre nom <span class="req">*</span></label>
+              <input id="contact_nom" name="contact_nom" class="input" type="text" required />
+            </div>
+            <div class="field">
+              <label class="field-label" for="contact_email">Email <span class="req">*</span></label>
+              <input id="contact_email" name="contact_email" class="input" type="email" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="contact_tel">Téléphone</label>
+            <input id="contact_tel" name="contact_tel" class="input" type="tel" />
+          </div>
+
+          <label class="checkbox-field">
+            <input type="checkbox" name="rgpd" value="oui" required />
+            <span>
+              J’accepte que mes informations soient utilisées pour être recontacté dans le cadre de
+              cette mise en relation. <a href="/confidentialite">Politique de confidentialité</a>.
+            </span>
+          </label>
+        </FormspreeForm>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .form-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+  @media (min-width: 960px) {
+    .form-layout {
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 3.5rem;
+    }
+    .form-aside {
+      position: sticky;
+      top: 6rem;
+    }
+  }
+  .form-title {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-top: 1rem;
+  }
+  .form-intro {
+    margin-top: 1rem;
+  }
+  .form-points {
+    margin-top: 1.5rem;
+  }
+  .form-contact {
+    margin-top: 1.5rem;
+    font-size: var(--text-sm);
+  }
+  .form-contact a {
+    color: var(--color-accent);
+  }
+  .form-card {
+    padding: 2rem;
+  }
+  .form-sep {
+    border: 0;
+    border-top: 1px solid var(--color-border);
+    margin: 0.25rem 0;
+  }
+  @media (min-width: 640px) {
+    .form-card {
+      padding: 2.5rem;
+    }
+  }
+</style>

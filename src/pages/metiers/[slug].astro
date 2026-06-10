@@ -1,0 +1,195 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
+import FaqSection from '@components/ui/FaqSection.astro';
+import CtaBand from '@components/ui/CtaBand.astro';
+import { METIERS, type Metier } from '@data/metiers';
+import {
+  organization,
+  serviceMetier,
+  faqPage,
+  breadcrumb,
+  buildGraph,
+} from '@lib/schema';
+
+export function getStaticPaths() {
+  return METIERS.map((m) => ({
+    params: { slug: m.slug },
+    props: { metier: m },
+  }));
+}
+
+type Props = { metier: Metier };
+const { metier } = Astro.props as Props;
+
+const breadcrumbs = [
+  { name: 'Accueil', url: '/' },
+  { name: 'Métiers', url: '/#metiers' },
+  { name: `Remplacement ${metier.nom.toLowerCase()}`, url: `/metiers/${metier.slug}` },
+];
+
+const autresMetiers = METIERS.filter((m) => m.slug !== metier.slug);
+
+const jsonLd = buildGraph(
+  organization(),
+  breadcrumb(breadcrumbs),
+  serviceMetier(metier),
+  faqPage(metier.faq)
+);
+---
+
+<BaseLayout title={metier.metaTitle} description={metier.metaDescription} jsonLd={jsonLd}>
+  <Breadcrumbs items={breadcrumbs} />
+
+  <section class="section">
+    <div class="container-content metier-hero">
+      <div data-reveal>
+        <span class="badge">
+          <span aria-hidden="true">{metier.icone}</span> Remplacement {metier.nom.toLowerCase()}
+        </span>
+        <h1 class="h-display metier-h1">{metier.h1}</h1>
+        <p class="lede metier-intro">{metier.intro}</p>
+        <div class="metier-actions">
+          <a href="/publier-un-besoin" class="btn-primary btn-lg">J’ai besoin d’un remplaçant</a>
+          <a href="/inscription-remplacant" class="btn-secondary btn-lg">Je suis {metier.nom.toLowerCase()}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="container-content">
+      <div class="points-grid grid-4" data-reveal>
+        {
+          metier.pointsCles.map((p) => (
+            <div class="point-card">
+              <span class="point-label">{p.label}</span>
+              <span class="point-valeur">{p.valeur}</span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container-content metier-contenu">
+      <div class="prose" data-reveal>
+        <h2 class="prose-h2">Le remplacement {metier.nom.toLowerCase()} en pratique</h2>
+        {metier.contenu.map((para) => <p set:html={para} />)}
+      </div>
+    </div>
+  </section>
+
+  <FaqSection
+    items={metier.faq}
+    titre={`Questions fréquentes — remplacement ${metier.nom.toLowerCase()}`}
+    soft={true}
+  />
+
+  <section class="section">
+    <div class="container-content">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Autres métiers</span>
+        <h2 class="h-section">Voir les autres remplacements</h2>
+      </div>
+      <div class="autres-grid grid-4" data-reveal>
+        {
+          autresMetiers.map((m) => (
+            <a href={`/metiers/${m.slug}`} class="autre-card card card-hover">
+              <span class="autre-icone" aria-hidden="true">{m.icone}</span>
+              <span class="autre-nom">{m.nom}</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <CtaBand titre={`Un remplacement de ${metier.nom.toLowerCase()} à organiser ?`} />
+</BaseLayout>
+
+<style>
+  .metier-hero {
+    max-width: 48rem;
+  }
+  .metier-h1 {
+    font-size: clamp(1.875rem, 4vw, 2.75rem);
+    margin-top: 1rem;
+  }
+  .metier-intro {
+    margin-top: 1.25rem;
+  }
+  .metier-actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.875rem;
+  }
+  .points-grid {
+    gap: 1rem;
+  }
+  .point-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 1.25rem;
+    background: var(--color-bg-soft);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+  .point-label {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-fg-subtle);
+    font-weight: 600;
+  }
+  .point-valeur {
+    font-weight: 600;
+    color: var(--color-fg);
+  }
+  .metier-contenu {
+    max-width: 46rem;
+  }
+  .prose-h2 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin-bottom: 1.5rem;
+  }
+  .prose :global(p) {
+    margin-bottom: 1.25rem;
+    color: var(--color-fg-muted);
+    line-height: 1.75;
+  }
+  .prose :global(strong) {
+    color: var(--color-fg);
+    font-weight: 600;
+  }
+  .section-head {
+    max-width: 40rem;
+    margin-bottom: 2rem;
+  }
+  .autres-grid {
+    gap: 1rem;
+  }
+  .autre-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+  }
+  .autre-icone {
+    font-size: 1.375rem;
+  }
+  .autre-nom {
+    font-weight: 600;
+  }
+  @media (max-width: 480px) {
+    .metier-actions {
+      flex-direction: column;
+    }
+    .metier-actions a {
+      width: 100%;
+    }
+  }
+</style>

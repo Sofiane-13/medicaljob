@@ -1,0 +1,164 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
+import FaqSection from '@components/ui/FaqSection.astro';
+import { METIERS } from '@data/metiers';
+import { organization, faqPage, breadcrumb, buildGraph } from '@lib/schema';
+
+const breadcrumbs = [
+  { name: 'Accueil', url: '/' },
+  { name: 'Remplaçants', url: '/remplacants' },
+];
+
+const avantages = [
+  { titre: '100 % gratuit', desc: 'Créer votre profil et accéder aux missions ne vous coûte rien. Aucun abonnement, aucune commission sur vos honoraires.' },
+  { titre: 'Vous gardez le contrôle', desc: 'Vous renseignez vos disponibilités, vos zones et vos préférences. Vous acceptez uniquement les missions qui vous conviennent.' },
+  { titre: 'Des missions près de chez vous', desc: 'Recevez des propositions de remplacement ciblées sur votre métier et votre secteur géographique.' },
+  { titre: 'Contact direct', desc: 'Échangez directement avec les établissements, sans intermédiaire qui ralentit la mise en place.' },
+];
+
+const faqs = [
+  { q: 'L’inscription est-elle vraiment gratuite ?', a: "Oui. Pour les professionnels remplaçants, l'inscription, la création de profil et l'accès aux missions sont entièrement gratuits, sans commission sur vos honoraires." },
+  { q: 'Quels documents dois-je fournir ?', a: "Selon votre métier : inscription à l'Ordre, licence ou carte de remplacement, diplôme et numéro RPPS. Ces éléments rassurent les établissements et accélèrent la mise en relation." },
+  { q: 'Suis-je obligé d’accepter les missions proposées ?', a: "Non. Vous restez libre d'accepter ou de refuser. Vous choisissez vos dates, vos lieux et vos conditions." },
+  { q: 'MedicalJob gère-t-il mon contrat et ma paie ?', a: "Non. MedicalJob vous met en relation avec l'établissement. Le contrat de remplacement, la rémunération et le statut (salarié ou libéral) sont définis entre vous et l'établissement." },
+];
+
+const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs), faqPage(faqs));
+---
+
+<BaseLayout
+  title="Trouvez des missions de remplacement en santé, gratuitement"
+  description="Médecin, infirmier, pharmacien, sage-femme ou préparateur : créez votre profil gratuit sur MedicalJob et trouvez des missions de remplacement près de chez vous, partout en France."
+  jsonLd={jsonLd}
+>
+  <Breadcrumbs items={breadcrumbs} />
+
+  <section class="section">
+    <div class="container-content page-hero">
+      <div data-reveal>
+        <span class="badge badge-teal">Pour les professionnels de santé</span>
+        <h1 class="h-display">Trouvez vos missions de remplacement, gratuitement.</h1>
+        <p class="lede page-hero-lede">
+          Créez votre profil en quelques minutes et soyez contacté dès qu’une mission
+          correspond à votre métier, vos disponibilités et votre zone. Vous gardez la main
+          sur tout.
+        </p>
+        <div class="page-hero-actions">
+          <a href="/inscription-remplacant" class="btn-primary btn-lg">Créer mon profil</a>
+          <a href="/comment-ca-marche" class="btn-secondary btn-lg">Comment ça marche</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft">
+    <div class="container-content">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Vos avantages</span>
+        <h2 class="h-section">Pourquoi passer par MedicalJob</h2>
+      </div>
+      <div class="grid-2">
+        {avantages.map((a) => (
+          <article class="card card-hover" data-reveal>
+            <h3 class="card-titre">{a.titre}</h3>
+            <p class="text-muted">{a.desc}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container-content">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Votre métier</span>
+        <h2 class="h-section">Des missions pour chaque profession</h2>
+      </div>
+      <div class="metiers-list grid-3">
+        {METIERS.map((m) => (
+          <a href={`/metiers/${m.slug}`} class="metier-link-card card card-hover" data-reveal>
+            <span class="metier-icone" aria-hidden="true">{m.icone}</span>
+            <span class="metier-nom">{m.pluriel}</span>
+            <span class="metier-arrow">→</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <FaqSection items={faqs} titre="Questions des remplaçants" soft={true} />
+
+  <section class="section">
+    <div class="container-content">
+      <div class="cta-inline card" data-reveal>
+        <div>
+          <h2 class="h-section">Prêt à recevoir des missions ?</h2>
+          <p class="text-muted cta-inline-text">
+            Créez votre profil remplaçant en quelques minutes. C’est gratuit.
+          </p>
+        </div>
+        <a href="/inscription-remplacant" class="btn-primary btn-lg">Créer mon profil</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-hero {
+    max-width: 46rem;
+  }
+  .page-hero-lede {
+    margin-top: 1.25rem;
+  }
+  .page-hero-actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.875rem;
+  }
+  .section-head {
+    max-width: 40rem;
+    margin-bottom: 2.5rem;
+  }
+  .card-titre {
+    font-size: 1.1875rem;
+    margin-bottom: 0.5rem;
+  }
+  .metier-link-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+  }
+  .metier-icone {
+    font-size: 1.5rem;
+  }
+  .metier-nom {
+    font-weight: 600;
+    flex: 1;
+  }
+  .metier-arrow {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+  .cta-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+  .cta-inline-text {
+    margin-top: 0.5rem;
+  }
+  @media (max-width: 480px) {
+    .page-hero-actions {
+      flex-direction: column;
+    }
+    .page-hero-actions a {
+      width: 100%;
+    }
+  }
+</style>

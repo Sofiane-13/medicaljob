@@ -1,0 +1,55 @@
+---
+import LegalLayout from '@components/legal/LegalLayout.astro';
+import { SITE, LEGAL } from '@data/site';
+---
+
+<LegalLayout
+  title="Politique de confidentialité"
+  description="Politique de confidentialité et traitement des données personnelles sur MedicalJob, conforme au RGPD."
+  maj={LEGAL.dateMaj}
+>
+  <p>
+    {SITE.name} accorde une grande importance à la protection de vos données personnelles. Cette
+    politique décrit les données collectées et l’usage qui en est fait, conformément au Règlement
+    général sur la protection des données (RGPD).
+  </p>
+
+  <h2>Données collectées</h2>
+  <p>Via nos formulaires, nous collectons notamment :</p>
+  <ul>
+    <li>Pour les établissements : nom de la structure, type, ville, besoin, coordonnées de contact.</li>
+    <li>Pour les remplaçants : métier, diplômes/inscription ordinale, zones, disponibilités, coordonnées.</li>
+  </ul>
+
+  <h2>Finalité du traitement</h2>
+  <p>
+    Ces données sont utilisées exclusivement pour assurer la <strong>mise en relation</strong> entre
+    établissements et professionnels remplaçants, et pour vous recontacter dans ce cadre.
+  </p>
+
+  <h2>Base légale et conservation</h2>
+  <p>
+    Le traitement repose sur votre consentement, recueilli lors de l’envoi du formulaire. Vos
+    données sont conservées le temps nécessaire à la mise en relation, puis supprimées ou
+    anonymisées.
+  </p>
+
+  <h2>Sous-traitants</h2>
+  <p>
+    Les formulaires sont traités via le service Formspree, et l’hébergement est assuré par
+    {LEGAL.hebergeur.nom}. Aucune donnée n’est revendue à des tiers.
+  </p>
+
+  <h2>Vos droits</h2>
+  <p>
+    Vous disposez d’un droit d’accès, de rectification, d’effacement, d’opposition et de portabilité
+    de vos données. Pour les exercer, écrivez à
+    <a href={`mailto:${LEGAL.contact.emailRgpd}`}>{LEGAL.contact.emailRgpd}</a>.
+  </p>
+
+  <h2>Cookies</h2>
+  <p>
+    Ce site n’utilise pas de cookies publicitaires. Une mesure d’audience respectueuse de la vie
+    privée, sans cookie, peut être mise en place.
+  </p>
+</LegalLayout>

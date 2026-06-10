@@ -1,0 +1,73 @@
+---
+export type Props = {
+  titre?: string;
+  texte?: string;
+};
+
+const {
+  titre = 'Prêt à trouver votre remplacement ?',
+  texte = 'Que vous cherchiez un remplaçant ou une mission, la mise en relation commence ici.',
+} = Astro.props;
+---
+
+<section class="section">
+  <div class="container-content">
+    <div class="cta-band" data-reveal>
+      <h2 class="cta-band-titre">{titre}</h2>
+      <p class="cta-band-texte">{texte}</p>
+      <div class="cta-band-actions">
+        <a href="/publier-un-besoin" class="btn-primary btn-lg">Publier un besoin</a>
+        <a href="/inscription-remplacant" class="btn-secondary btn-lg cta-band-secondary">
+          Je suis remplaçant
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-band {
+    background:
+      radial-gradient(80% 120% at 100% 0%, rgba(255, 255, 255, 0.14) 0%, transparent 60%),
+      var(--color-accent);
+    color: #fff;
+    border-radius: var(--radius-lg);
+    padding: clamp(2.5rem, 5vw, 4rem);
+    text-align: center;
+  }
+  .cta-band-titre {
+    color: #fff;
+    font-size: clamp(1.625rem, 3.5vw, 2.5rem);
+  }
+  .cta-band-texte {
+    margin: 1rem auto 0;
+    max-width: 36rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: var(--text-lg);
+  }
+  .cta-band-actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.875rem;
+  }
+  .cta-band-secondary {
+    background: transparent;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  .cta-band-secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-color: #fff;
+  }
+  @media (max-width: 480px) {
+    .cta-band-actions {
+      flex-direction: column;
+    }
+    .cta-band-actions a {
+      width: 100%;
+    }
+  }
+</style>

@@ -1,0 +1,159 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
+import FaqSection from '@components/ui/FaqSection.astro';
+import { organization, faqPage, breadcrumb, buildGraph } from '@lib/schema';
+
+const breadcrumbs = [
+  { name: 'Accueil', url: '/' },
+  { name: 'Établissements', url: '/etablissements' },
+];
+
+const avantages = [
+  { titre: 'Publiez en 2 minutes', desc: 'Décrivez le métier, les dates et le lieu. Votre besoin est diffusé immédiatement aux remplaçants concernés.' },
+  { titre: 'Des profils qualifiés', desc: 'Médecins, IDE, pharmaciens, sages-femmes et préparateurs, filtrés par cadre d’exercice et zone géographique.' },
+  { titre: 'Spécial urgences', desc: 'Un arrêt de dernière minute ? Touchez en quelques clics les professionnels disponibles à proximité.' },
+  { titre: 'Sans engagement', desc: 'Aucune obligation. Vous échangez en direct avec les candidats et décidez du contrat et des conditions.' },
+];
+
+const typesEtablissements = [
+  'Hôpitaux & CHU', 'Cliniques privées', 'EHPAD & maisons de retraite',
+  'Cabinets médicaux', 'Officines de pharmacie', 'Centres de santé',
+  'Maisons de santé pluriprofessionnelles', 'Services de soins à domicile',
+];
+
+const faqs = [
+  { q: 'Combien coûte la publication d’un besoin ?', a: "La publication d'un besoin de remplacement se fait sans engagement. Contactez-nous pour connaître les modalités adaptées à votre établissement." },
+  { q: 'Sous quel délai vais-je recevoir des candidatures ?', a: "Cela dépend du métier, des dates et de la zone. Les besoins urgents et bien décrits (lieu, dates, conditions) reçoivent généralement des retours plus rapidement." },
+  { q: 'Puis-je publier plusieurs besoins ?', a: "Oui, vous pouvez publier autant de besoins que nécessaire : plusieurs métiers, plusieurs périodes ou plusieurs sites." },
+  { q: 'Qui rédige le contrat de remplacement ?', a: "Le contrat est conclu directement entre votre établissement et le professionnel, dans le respect des règles ordinales et conventionnelles. MedicalJob facilite uniquement la mise en relation." },
+];
+
+const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs), faqPage(faqs));
+---
+
+<BaseLayout
+  title="Trouvez un remplaçant pour votre établissement de santé"
+  description="Hôpitaux, cliniques, EHPAD, cabinets et officines : publiez votre besoin de remplacement sur MedicalJob et recevez des candidatures de professionnels qualifiés et disponibles."
+  jsonLd={jsonLd}
+>
+  <Breadcrumbs items={breadcrumbs} />
+
+  <section class="section">
+    <div class="container-content page-hero">
+      <div data-reveal>
+        <span class="badge">Pour les établissements & employeurs</span>
+        <h1 class="h-display">Un besoin de remplacement ? Trouvez le bon profil, vite.</h1>
+        <p class="lede page-hero-lede">
+          Publiez votre besoin et touchez immédiatement les professionnels de santé
+          remplaçants disponibles dans votre secteur. Simple, ciblé, sans engagement.
+        </p>
+        <div class="page-hero-actions">
+          <a href="/publier-un-besoin" class="btn-primary btn-lg">Publier un besoin</a>
+          <a href="/comment-ca-marche" class="btn-secondary btn-lg">Comment ça marche</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft">
+    <div class="container-content">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Vos avantages</span>
+        <h2 class="h-section">Pourquoi recruter vos remplaçants sur MedicalJob</h2>
+      </div>
+      <div class="grid-2">
+        {avantages.map((a) => (
+          <article class="card card-hover" data-reveal>
+            <h3 class="card-titre">{a.titre}</h3>
+            <p class="text-muted">{a.desc}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container-content">
+      <div class="section-head" data-reveal>
+        <span class="eyebrow">Pour qui</span>
+        <h2 class="h-section">Tous les établissements de santé</h2>
+      </div>
+      <ul class="tags-list" data-reveal>
+        {typesEtablissements.map((t) => <li class="tag-chip">{t}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <FaqSection items={faqs} titre="Questions des établissements" soft={true} />
+
+  <section class="section">
+    <div class="container-content">
+      <div class="cta-inline card" data-reveal>
+        <div>
+          <h2 class="h-section">Publiez votre premier besoin</h2>
+          <p class="text-muted cta-inline-text">
+            Quelques informations suffisent pour lancer la recherche de votre remplaçant.
+          </p>
+        </div>
+        <a href="/publier-un-besoin" class="btn-primary btn-lg">Publier un besoin</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-hero {
+    max-width: 46rem;
+  }
+  .page-hero-lede {
+    margin-top: 1.25rem;
+  }
+  .page-hero-actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.875rem;
+  }
+  .section-head {
+    max-width: 40rem;
+    margin-bottom: 2.5rem;
+  }
+  .card-titre {
+    font-size: 1.1875rem;
+    margin-bottom: 0.5rem;
+  }
+  .tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+  }
+  .tag-chip {
+    background: var(--color-bg-tint);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    padding: 0.5rem 1rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-fg);
+  }
+  .cta-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+  .cta-inline-text {
+    margin-top: 0.5rem;
+  }
+  @media (max-width: 480px) {
+    .page-hero-actions {
+      flex-direction: column;
+    }
+    .page-hero-actions a {
+      width: 100%;
+    }
+  }
+</style>

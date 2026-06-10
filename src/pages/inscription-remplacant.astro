@@ -1,0 +1,197 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
+import FormspreeForm from '@components/forms/FormspreeForm.astro';
+import { SITE } from '@data/site';
+import { METIERS } from '@data/metiers';
+import { organization, breadcrumb, buildGraph } from '@lib/schema';
+
+const breadcrumbs = [
+  { name: 'Accueil', url: '/' },
+  { name: 'Inscription remplaçant', url: '/inscription-remplacant' },
+];
+
+const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
+---
+
+<BaseLayout
+  title="Inscription remplaçant — trouvez des missions"
+  description="Créez votre profil de professionnel de santé remplaçant (médecin, infirmier, pharmacien, sage-femme, préparateur) et recevez des missions ciblées près de chez vous. Gratuit."
+  jsonLd={jsonLd}
+  hideFloatingCta={true}
+>
+  <Breadcrumbs items={breadcrumbs} />
+
+  <section class="section">
+    <div class="container-content form-layout">
+      <aside class="form-aside" data-reveal>
+        <span class="badge badge-teal">Professionnels de santé</span>
+        <h1 class="form-title">Créez votre profil remplaçant</h1>
+        <p class="text-muted form-intro">
+          Renseignez votre métier, vos zones et vos disponibilités. Nous vous contactons
+          dès qu’une mission correspond à votre profil.
+        </p>
+        <ul class="check-list form-points">
+          <li>Inscription 100 % gratuite</li>
+          <li>Aucune commission sur vos honoraires</li>
+          <li>Vous choisissez vos missions</li>
+          <li>Contact direct avec les établissements</li>
+        </ul>
+        <p class="form-contact text-subtle">
+          Une question ? <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        </p>
+      </aside>
+
+      <div class="form-card card" data-reveal>
+        <FormspreeForm
+          endpoint={SITE.forms.remplacantEndpoint}
+          subject="Nouvelle inscription remplaçant — MedicalJob"
+          formId="form-remplacant"
+          submitLabel="Créer mon profil"
+        >
+          <div class="field-row cols-2">
+            <div class="field">
+              <label class="field-label" for="nom">Nom et prénom <span class="req">*</span></label>
+              <input id="nom" name="nom" class="input" type="text" required />
+            </div>
+            <div class="field">
+              <label class="field-label" for="metier">Métier <span class="req">*</span></label>
+              <select id="metier" name="metier" class="select" required>
+                <option value="" disabled selected>Sélectionnez…</option>
+                {METIERS.map((m) => <option value={m.nom}>{m.nom}</option>)}
+                <option>Autre</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="diplome">
+              Diplôme / inscription ordinale
+            </label>
+            <input
+              id="diplome"
+              name="diplome"
+              class="input"
+              type="text"
+              placeholder="Ex. n° RPPS, carte de remplacement, licence de remplacement…"
+            />
+            <span class="field-hint">Ces informations rassurent les établissements et accélèrent la mise en relation.</span>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="zones">
+              Zones géographiques recherchées <span class="req">*</span>
+            </label>
+            <input
+              id="zones"
+              name="zones"
+              class="input"
+              type="text"
+              placeholder="Ex. Lyon, Villeurbanne et 30 km autour"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <span class="field-label">Disponibilités</span>
+            <div class="radio-group">
+              <label class="radio-chip"><input type="radio" name="disponibilite" value="Immédiate" />Immédiate</label>
+              <label class="radio-chip"><input type="radio" name="disponibilite" value="Sous 1 mois" />Sous 1 mois</label>
+              <label class="radio-chip"><input type="radio" name="disponibilite" value="Ponctuelle" />Ponctuelle</label>
+              <label class="radio-chip"><input type="radio" name="disponibilite" value="Week-ends" />Week-ends</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Type de mission recherché</span>
+            <div class="radio-group">
+              <label class="radio-chip"><input type="radio" name="type_mission" value="Ponctuel" />Ponctuel</label>
+              <label class="radio-chip"><input type="radio" name="type_mission" value="Récurrent" />Récurrent</label>
+              <label class="radio-chip"><input type="radio" name="type_mission" value="Longue durée" />Longue durée</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="message">Message (optionnel)</label>
+            <textarea
+              id="message"
+              name="message"
+              class="textarea"
+              placeholder="Expérience, préférences de cadre d’exercice, contraintes…"
+            ></textarea>
+          </div>
+
+          <hr class="form-sep" />
+
+          <div class="field-row cols-2">
+            <div class="field">
+              <label class="field-label" for="email">Email <span class="req">*</span></label>
+              <input id="email" name="email" class="input" type="email" required />
+            </div>
+            <div class="field">
+              <label class="field-label" for="tel">Téléphone</label>
+              <input id="tel" name="tel" class="input" type="tel" />
+            </div>
+          </div>
+
+          <label class="checkbox-field">
+            <input type="checkbox" name="rgpd" value="oui" required />
+            <span>
+              J’accepte que mes informations soient utilisées pour être recontacté dans le cadre de
+              la mise en relation. <a href="/confidentialite">Politique de confidentialité</a>.
+            </span>
+          </label>
+        </FormspreeForm>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .form-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+  @media (min-width: 960px) {
+    .form-layout {
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 3.5rem;
+    }
+    .form-aside {
+      position: sticky;
+      top: 6rem;
+    }
+  }
+  .form-title {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-top: 1rem;
+  }
+  .form-intro {
+    margin-top: 1rem;
+  }
+  .form-points {
+    margin-top: 1.5rem;
+  }
+  .form-contact {
+    margin-top: 1.5rem;
+    font-size: var(--text-sm);
+  }
+  .form-contact a {
+    color: var(--color-accent);
+  }
+  .form-card {
+    padding: 2rem;
+  }
+  .form-sep {
+    border: 0;
+    border-top: 1px solid var(--color-border);
+    margin: 0.25rem 0;
+  }
+  @media (min-width: 640px) {
+    .form-card {
+      padding: 2.5rem;
+    }
+  }
+</style>

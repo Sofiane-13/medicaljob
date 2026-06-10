@@ -1,0 +1,50 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Hero from '@components/home/Hero.astro';
+import DeuxFaces from '@components/home/DeuxFaces.astro';
+import CommentCaMarche from '@components/home/CommentCaMarche.astro';
+import MetiersCouverts from '@components/home/MetiersCouverts.astro';
+import Confiance from '@components/home/Confiance.astro';
+import FaqSection from '@components/ui/FaqSection.astro';
+import CtaBand from '@components/ui/CtaBand.astro';
+import { organization, website, faqPage, buildGraph } from '@lib/schema';
+
+const faqs = [
+  {
+    q: 'MedicalJob est-il payant ?',
+    a: "L'inscription et la recherche de missions sont gratuites pour les professionnels remplaçants. Pour les établissements, la publication d'un besoin se fait sans engagement.",
+  },
+  {
+    q: 'Quels métiers de santé sont concernés ?',
+    a: "MedicalJob couvre les médecins, infirmiers (IDE), sages-femmes, pharmaciens et préparateurs en pharmacie, en milieu hospitalier (hôpital, clinique, EHPAD, cabinet) comme en officine.",
+  },
+  {
+    q: 'MedicalJob est-il mon employeur ?',
+    a: "Non. MedicalJob est un service de mise en relation. Le contrat de remplacement, la rémunération et les conditions sont définis directement entre l'établissement et le professionnel.",
+  },
+  {
+    q: 'Dans quelles villes le service est-il disponible ?',
+    a: "MedicalJob fonctionne partout en France. Des pages dédiées existent pour les principales villes (Paris, Lyon, Marseille, Toulouse, Lille, Bordeaux et bien d'autres).",
+  },
+  {
+    q: 'Comment publier un besoin de remplacement ?',
+    a: "Rendez-vous sur la page « Publier un besoin », précisez le métier recherché, les dates et le lieu. Les remplaçants correspondants sont alors mis en relation avec vous.",
+  },
+];
+
+const jsonLd = buildGraph(organization(), website(), faqPage(faqs));
+---
+
+<BaseLayout
+  title="Remplacements en santé : hôpital, EHPAD, cabinet et officine"
+  description="MedicalJob met en relation établissements de santé et professionnels remplaçants : médecins, infirmiers, pharmaciens, sages-femmes et préparateurs. Publiez un besoin ou trouvez une mission, partout en France."
+  jsonLd={jsonLd}
+>
+  <Hero />
+  <DeuxFaces />
+  <CommentCaMarche />
+  <MetiersCouverts />
+  <Confiance />
+  <FaqSection items={faqs} titre="Vos questions sur MedicalJob" />
+  <CtaBand />
+</BaseLayout>

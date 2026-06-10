@@ -1,0 +1,78 @@
+---
+const etapes = [
+  {
+    num: '01',
+    titre: 'Décrivez votre besoin ou votre profil',
+    desc: 'L’établissement publie une mission (métier, dates, lieu). Le professionnel crée son profil et ses disponibilités.',
+  },
+  {
+    num: '02',
+    titre: 'On vous met en relation',
+    desc: 'Les profils et les besoins correspondants sont rapprochés. Vous recevez les coordonnées pour échanger directement.',
+  },
+  {
+    num: '03',
+    titre: 'Le remplacement se met en place',
+    desc: 'Vous convenez ensemble des modalités et du contrat. MedicalJob facilite la rencontre, vous gardez la main.',
+  },
+];
+---
+
+<section class="section bg-soft">
+  <div class="container-content">
+    <div class="section-head" data-reveal>
+      <span class="eyebrow">Comment ça marche</span>
+      <h2 class="h-section">Un remplacement organisé en 3 étapes</h2>
+      <p class="lede section-lede">
+        Simple pour les établissements, gratuit pour les remplaçants. Vous restez
+        décisionnaires sur le contrat et les conditions.
+      </p>
+    </div>
+
+    <ol class="etapes grid-3">
+      {
+        etapes.map((e) => (
+          <li class="etape card card-hover" data-reveal>
+            <span class="etape-num">{e.num}</span>
+            <h3 class="etape-titre">{e.titre}</h3>
+            <p class="text-muted">{e.desc}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .section-head {
+    max-width: 40rem;
+    margin-bottom: 3rem;
+  }
+  .section-lede {
+    margin-top: 1rem;
+  }
+  .etapes {
+    counter-reset: step;
+  }
+  .etape {
+    padding: 2rem;
+  }
+  .etape-num {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.25rem;
+  }
+  .etape-titre {
+    font-size: 1.1875rem;
+    margin-bottom: 0.5rem;
+  }
+</style>

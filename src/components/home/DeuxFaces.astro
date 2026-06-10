@@ -1,0 +1,84 @@
+---
+// Deux colonnes : établissements vs remplaçants
+const faces = [
+  {
+    tag: 'Établissements & employeurs',
+    titre: 'Vous cherchez un remplaçant',
+    desc: 'Hôpital, clinique, EHPAD, cabinet ou officine : publiez votre besoin et recevez des candidatures de professionnels qualifiés et disponibles.',
+    points: [
+      'Publication du besoin en 2 minutes',
+      'Profils ciblés par métier et par zone',
+      'Idéal pour les remplacements urgents',
+      'Sans engagement',
+    ],
+    cta: { label: 'Publier un besoin', href: '/publier-un-besoin' },
+    variant: 'accent',
+  },
+  {
+    tag: 'Professionnels de santé',
+    titre: 'Vous cherchez des missions',
+    desc: 'Médecin, infirmier, pharmacien, sage-femme ou préparateur : créez votre profil et soyez contacté dès qu’une mission correspond à vos critères.',
+    points: [
+      'Inscription 100 % gratuite',
+      'Missions près de chez vous',
+      'Vous choisissez vos disponibilités',
+      'Contact direct avec les établissements',
+    ],
+    cta: { label: 'Créer mon profil remplaçant', href: '/inscription-remplacant' },
+    variant: 'teal',
+  },
+];
+---
+
+<section class="section">
+  <div class="container-content">
+    <div class="grid-2">
+      {
+        faces.map((f) => (
+          <article class={`face card card-hover face-${f.variant}`} data-reveal>
+            <span class={f.variant === 'teal' ? 'badge badge-teal' : 'badge'}>{f.tag}</span>
+            <h2 class="face-titre">{f.titre}</h2>
+            <p class="face-desc text-muted">{f.desc}</p>
+            <ul class="check-list face-points">
+              {f.points.map((p) => (
+                <li>{p}</li>
+              ))}
+            </ul>
+            <a
+              href={f.cta.href}
+              class={f.variant === 'teal' ? 'btn-secondary btn-block' : 'btn-primary btn-block'}
+            >
+              {f.cta.label}
+            </a>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .face {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+  }
+  .face-titre {
+    font-size: clamp(1.375rem, 2.5vw, 1.75rem);
+    margin-top: 1rem;
+  }
+  .face-desc {
+    margin-top: 0.75rem;
+  }
+  .face-points {
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+    flex: 1;
+  }
+  .face-accent {
+    border-top: 3px solid var(--color-accent);
+  }
+  .face-teal {
+    border-top: 3px solid var(--color-teal);
+  }
+</style>

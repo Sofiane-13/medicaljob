@@ -11,6 +11,12 @@ export const supabase = createClient(SITE.supabase.url, SITE.supabase.anonKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    /**
+     * Désactive le verrou navigator.locks de supabase-js : sur une appli
+     * mono-onglet, plusieurs accès auth concurrents (Header + page) peuvent
+     * sinon provoquer un blocage de la 1re requête quand une session existe.
+     */
+    lock: async (_name: string, _acquireTimeout: number, fn: () => Promise<any>) => fn(),
   },
 });
 

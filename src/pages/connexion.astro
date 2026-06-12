@@ -32,11 +32,11 @@ import BaseLayout from '@layouts/BaseLayout.astro';
         <form id="code-form" class="auth-form" hidden>
           <p class="auth-info">
             📧 Un email vient d'être envoyé à <strong id="sent-email"></strong>. Cliquez le lien,
-            ou saisissez ci-dessous le code à 6 chiffres reçu.
+            ou saisissez ci-dessous le code reçu.
           </p>
           <div class="field">
             <label class="field-label" for="code">Code de connexion</label>
-            <input id="code" name="code" class="input" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" />
+            <input id="code" name="code" class="input" inputmode="numeric" autocomplete="one-time-code" placeholder="Code reçu par email" />
           </div>
           <button type="submit" class="btn-primary btn-lg btn-block" id="code-submit">Valider le code</button>
           <button type="button" class="btn-ghost" id="back-email">← Changer d'email</button>

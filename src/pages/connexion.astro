@@ -1,0 +1,183 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Connexion / Inscription"
+  description="Connectez-vous à MedicalJob pour publier un besoin, créer votre profil de remplaçant et gérer vos candidatures."
+  noindex={true}
+  hideFloatingCta={true}
+>
+  <section class="section">
+    <div class="container-content auth-wrap">
+      <div class="card auth-card">
+        <h1 class="auth-title">Connexion</h1>
+        <p class="auth-sub text-muted">
+          Entrez votre email : vous recevrez un lien et un code pour vous connecter (ou créer
+          votre compte). Aucun mot de passe.
+        </p>
+
+        <!-- Étape 1 : email -->
+        <form id="email-form" class="auth-form">
+          <div class="field">
+            <label class="field-label" for="email">Adresse email</label>
+            <input id="email" name="email" class="input" type="email" required placeholder="vous@exemple.fr" autocomplete="email" />
+          </div>
+          <button type="submit" class="btn-primary btn-lg btn-block" id="email-submit">
+            Recevoir mon lien de connexion
+          </button>
+        </form>
+
+        <!-- Étape 2 : code -->
+        <form id="code-form" class="auth-form" hidden>
+          <p class="auth-info">
+            📧 Un email vient d'être envoyé à <strong id="sent-email"></strong>. Cliquez le lien,
+            ou saisissez ci-dessous le code à 6 chiffres reçu.
+          </p>
+          <div class="field">
+            <label class="field-label" for="code">Code de connexion</label>
+            <input id="code" name="code" class="input" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" />
+          </div>
+          <button type="submit" class="btn-primary btn-lg btn-block" id="code-submit">Valider le code</button>
+          <button type="button" class="btn-ghost" id="back-email">← Changer d'email</button>
+        </form>
+
+        <p id="auth-error" class="auth-error" hidden role="alert"></p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .auth-wrap {
+    max-width: 30rem;
+  }
+  .auth-card {
+    padding: 2.5rem 2rem;
+  }
+  .auth-title {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .auth-sub {
+    margin-bottom: 1.75rem;
+  }
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .auth-info {
+    font-size: var(--text-sm);
+    color: var(--color-fg-muted);
+    background: var(--color-accent-soft);
+    border: 1px solid #c5dbfb;
+    border-radius: var(--radius-md);
+    padding: 0.875rem 1rem;
+  }
+  .auth-error {
+    margin-top: 1rem;
+    font-size: var(--text-sm);
+    color: #991b1b;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-md);
+    padding: 0.875rem 1rem;
+  }
+  #back-email {
+    align-self: center;
+  }
+</style>
+
+<script>
+  import { supabase, supabaseConfigured } from '@lib/supabaseClient';
+
+  function qs(id: string) {
+    return document.getElementById(id);
+  }
+
+  async function initAuth() {
+    const emailForm = qs('email-form') as HTMLFormElement | null;
+    if (!emailForm || emailForm.dataset.bound === 'true') return;
+    emailForm.dataset.bound = 'true';
+
+    const codeForm = qs('code-form') as HTMLFormElement;
+    const errorEl = qs('auth-error') as HTMLElement;
+    const sentEmailEl = qs('sent-email') as HTMLElement;
+    const params = new URLSearchParams(window.location.search);
+    const redirectTo = params.get('redirect') || '/mon-espace';
+    let email = '';
+
+    const showError = (msg: string) => {
+      errorEl.textContent = msg;
+      errorEl.hidden = false;
+    };
+
+    if (!supabaseConfigured) {
+      showError('Authentification non configurée (Supabase).');
+      return;
+    }
+
+    // Déjà connecté → on file vers l'espace perso
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (session) {
+      window.location.href = redirectTo;
+      return;
+    }
+
+    emailForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      email = (qs('email') as HTMLInputElement).value.trim();
+      if (!email) return;
+      const btn = qs('email-submit') as HTMLButtonElement;
+      btn.disabled = true;
+      btn.textContent = 'Envoi…';
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}${redirectTo}`,
+        },
+      });
+      btn.disabled = false;
+      btn.textContent = 'Recevoir mon lien de connexion';
+      if (error) {
+        showError(error.message);
+        return;
+      }
+      sentEmailEl.textContent = email;
+      emailForm.hidden = true;
+      codeForm.hidden = false;
+    });
+
+    codeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      const token = (qs('code') as HTMLInputElement).value.trim();
+      if (!token) return;
+      const btn = qs('code-submit') as HTMLButtonElement;
+      btn.disabled = true;
+      btn.textContent = 'Validation…';
+      const { error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
+      btn.disabled = false;
+      btn.textContent = 'Valider le code';
+      if (error) {
+        showError('Code invalide ou expiré. Réessayez ou utilisez le lien reçu par email.');
+        return;
+      }
+      window.location.href = redirectTo;
+    });
+
+    qs('back-email')?.addEventListener('click', () => {
+      errorEl.hidden = true;
+      codeForm.hidden = true;
+      emailForm.hidden = false;
+    });
+  }
+
+  initAuth();
+  document.addEventListener('astro:page-load', initAuth);
+</script>

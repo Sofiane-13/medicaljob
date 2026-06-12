@@ -20,7 +20,8 @@ import { NAV, SITE } from '@data/site';
     </nav>
 
     <div class="header-cta">
-      <a href="/inscription-remplacant" class="nav-link header-login">Je suis remplaçant</a>
+      <a id="nav-account" href="/connexion" class="nav-link header-login">Connexion</a>
+      <button id="nav-logout" class="nav-link header-login" type="button" hidden>Déconnexion</button>
       <a href="/publier-un-besoin" class="btn-primary header-pub">Publier un besoin</a>
       <button
         id="menu-toggle"
@@ -44,7 +45,7 @@ import { NAV, SITE } from '@data/site';
       <a href={item.href} class="mobile-nav-link" data-close-menu>{item.label}</a>
     ))}
     <div class="mobile-actions">
-      <a href="/inscription-remplacant" class="btn-secondary btn-block" data-close-menu>Je cherche un remplacement</a>
+      <a id="m-account" href="/connexion" class="btn-secondary btn-block" data-close-menu>Connexion / Mon espace</a>
       <a href="/publier-un-besoin" class="btn-primary btn-block" data-close-menu>Publier un besoin</a>
     </div>
   </nav>
@@ -239,4 +240,42 @@ import { NAV, SITE } from '@data/site';
   }
   initMenu();
   document.addEventListener('astro:page-load', initMenu);
+</script>
+
+<script>
+  import { supabase, supabaseConfigured } from '@lib/supabaseClient';
+
+  async function refreshAuthUi() {
+    if (!supabaseConfigured) return;
+    const account = document.getElementById('nav-account') as HTMLAnchorElement | null;
+    const logout = document.getElementById('nav-logout') as HTMLButtonElement | null;
+    const mAccount = document.getElementById('m-account') as HTMLAnchorElement | null;
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const loggedIn = Boolean(session);
+
+    if (account) {
+      account.textContent = loggedIn ? 'Mon espace' : 'Connexion';
+      account.href = loggedIn ? '/mon-espace' : '/connexion';
+    }
+    if (logout) logout.hidden = !loggedIn;
+    if (mAccount) {
+      mAccount.textContent = loggedIn ? 'Mon espace' : 'Connexion';
+      mAccount.href = loggedIn ? '/mon-espace' : '/connexion';
+    }
+
+    if (logout && logout.dataset.bound !== 'true') {
+      logout.dataset.bound = 'true';
+      logout.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.href = '/';
+      });
+    }
+  }
+
+  refreshAuthUi();
+  document.addEventListener('astro:page-load', refreshAuthUi);
+  supabase.auth.onAuthStateChange(() => refreshAuthUi());
 </script>

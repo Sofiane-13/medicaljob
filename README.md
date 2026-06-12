@@ -25,7 +25,24 @@ pnpm check        # vérification de types Astro
 
 ### Modération (publier un besoin sur le job board)
 
-Par défaut un besoin reçu a le statut `en_attente`. Dans Supabase → **Table Editor → besoins**, passe `statut` à `publie` pour qu'il apparaisse sur la page **/missions**. (Astuce : active une *Database Webhook* sur `INSERT` pour recevoir une alerte email/Slack à chaque nouveau besoin.)
+Par défaut un besoin reçu a le statut `publie` (affichage automatique). Pour retirer un besoin, passe son `statut` à `archive` dans **Table Editor → besoins**.
+
+## Comptes + système de candidatures (comme Diasporteur)
+
+Le site gère des **comptes** (Supabase Auth) et un **système de propositions** : un remplaçant postule à une mission, un établissement propose une mission à un profil, l'autre **accepte/refuse**, et les **coordonnées ne sont révélées qu'après acceptation** (acceptation atomique : accepter une candidature refuse les concurrentes).
+
+Pour l'activer :
+1. **SQL** : exécute [`supabase-proposals.sql`](supabase-proposals.sql) dans SQL Editor (crée `profiles`, `candidatures`, `owner_id`, RLS et fonctions). ⚠️ ce script **retire l'insertion anonyme** : publier exige désormais un compte.
+2. **Auth** : Supabase → **Authentication → Providers → Email** : activer. → **URL Configuration** : ajouter l'URL du site dans *Site URL* et *Redirect URLs* (`https://medicaljob.vercel.app`).
+3. **(option) code à 6 chiffres** : Authentication → Email Templates → *Magic Link* : ajouter `{{ .Token }}` dans le template pour permettre la saisie du code (sinon le lien magique fonctionne déjà).
+4. **Notifications email** (Resend) : déploie l'Edge Function et branche les webhooks —
+   ```bash
+   supabase functions deploy notify-candidature --no-verify-jwt
+   supabase secrets set RESEND_API_KEY=re_xxx MEDICALJOB_FROM="MedicalJob <noreply@ton-domaine.fr>"
+   ```
+   puis Dashboard → **Database → Webhooks** : 2 hooks (`candidatures` INSERT et UPDATE) vers la fonction `notify-candidature`.
+
+Pages liées : `/connexion`, `/mon-espace` (tableau de bord), actions « Postuler » sur `/mission` et « Proposer une mission » sur `/remplacant`.
 
 ## Autres réglages ([`src/data/site.ts`](src/data/site.ts))
 

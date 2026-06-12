@@ -1,0 +1,240 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Mon espace"
+  description="Gérez vos missions, votre profil et vos candidatures sur MedicalJob."
+  noindex={true}
+  hideFloatingCta={true}
+>
+  <section class="section">
+    <div class="container-content espace-wrap">
+      <div id="espace">
+        <div class="card espace-state"><p class="text-muted">Chargement…</p></div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .espace-wrap { max-width: 56rem; }
+  .espace-state { padding: 2.5rem; text-align: center; }
+
+  :global(.espace-header) {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 1rem; margin-bottom: 2rem;
+  }
+  :global(.espace-hello) { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; }
+  :global(.espace-email) { font-size: var(--text-sm); color: var(--color-fg-subtle); }
+  :global(.espace-actions) { display: flex; flex-wrap: wrap; gap: 0.625rem; }
+
+  :global(.espace-section) { margin-bottom: 2.5rem; }
+  :global(.espace-section h2) { font-size: 1.25rem; margin-bottom: 1rem; }
+  :global(.espace-empty) { color: var(--color-fg-subtle); font-style: italic; }
+
+  :global(.cand-card) {
+    padding: 1.5rem; background: #fff; border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: 1rem;
+  }
+  :global(.cand-top) { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem; }
+  :global(.cand-title) { font-weight: 700; color: var(--color-fg); }
+  :global(.statut-badge) { font-size: var(--text-xs); font-weight: 600; padding: 0.25rem 0.6875rem; border-radius: var(--radius-full); }
+  :global(.cand-sub) { font-size: var(--text-sm); color: var(--color-fg-muted); margin-bottom: 0.5rem; }
+  :global(.cand-msg) { font-size: var(--text-sm); color: var(--color-fg-muted); background: var(--color-bg-soft); border-radius: var(--radius-md); padding: 0.75rem 1rem; margin-bottom: 0.75rem; }
+  :global(.cand-date) { font-size: var(--text-xs); color: var(--color-fg-subtle); }
+  :global(.cand-actions) { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.875rem; }
+  :global(.cand-actions .btn-primary), :global(.cand-actions .btn-secondary) { padding: 0.625rem 1rem; font-size: var(--text-sm); }
+  :global(.btn-danger) {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0.625rem 1rem; font-size: var(--text-sm); font-weight: 600;
+    border-radius: var(--radius-full); border: 1px solid #fecaca; background: #fff; color: #b91c1c; cursor: pointer;
+  }
+  :global(.btn-danger:hover) { background: #fee2e2; }
+  :global(.cand-contact) {
+    margin-top: 0.875rem; padding: 0.875rem 1rem; border-radius: var(--radius-md);
+    background: var(--color-teal-soft); color: #065f46; font-size: var(--text-sm);
+  }
+  :global(.cand-contact a) { color: #065f46; text-decoration: underline; font-weight: 600; }
+</style>
+
+<script>
+  import { supabase, supabaseConfigured } from '@lib/supabaseClient';
+  import { STATUT_LABEL, STATUT_STYLE } from '@lib/statuts';
+
+  const esc = (s: unknown) =>
+    String(s ?? '').replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string)
+    );
+  const fmtDate = (d: string | null) =>
+    d ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(d)) : '';
+
+  function statutBadge(s: string) {
+    const st = (STATUT_STYLE as any)[s] || { bg: '#eef2f7', fg: '#64748b' };
+    const label = (STATUT_LABEL as any)[s] || s;
+    return `<span class="statut-badge" style="background:${st.bg};color:${st.fg}">${esc(label)}</span>`;
+  }
+
+  let uid = '';
+
+  function receivedCard(c: any) {
+    const isApplication = c.proposer_role === 'remplacant';
+    const title = isApplication ? 'Candidature reçue' : 'Proposition reçue';
+    const sub = isApplication
+      ? `${esc(c.profil_libelle || 'Un remplaçant')} — pour votre mission « ${esc(c.mission_libelle || '')} »`
+      : `${esc(c.mission_libelle || 'Une mission')} — proposée à votre profil`;
+    let actions = '';
+    if (c.statut === 'en_attente') {
+      actions = `<div class="cand-actions">
+        <button class="btn-primary" data-action="accepter" data-id="${c.id}">Accepter</button>
+        <button class="btn-danger" data-action="refuser" data-id="${c.id}">Refuser</button>
+      </div>`;
+    } else if (c.statut === 'acceptee') {
+      actions = `<div class="cand-actions"><button class="btn-secondary" data-action="contact" data-id="${c.id}">Voir les coordonnées</button></div>`;
+    }
+    return cardShell(c, title, sub, actions);
+  }
+
+  function sentCard(c: any) {
+    const isApplication = c.proposer_role === 'remplacant';
+    const title = isApplication ? 'Candidature envoyée' : 'Proposition envoyée';
+    const target = isApplication ? c.mission_libelle : c.profil_libelle;
+    const sub = `${esc(target || '')}`;
+    let actions = '';
+    const btns = [];
+    if (c.statut === 'acceptee') btns.push(`<button class="btn-secondary" data-action="contact" data-id="${c.id}">Voir les coordonnées</button>`);
+    if (c.statut === 'en_attente' || c.statut === 'acceptee') btns.push(`<button class="btn-danger" data-action="annuler" data-id="${c.id}">Annuler</button>`);
+    if (btns.length) actions = `<div class="cand-actions">${btns.join('')}</div>`;
+    return cardShell(c, title, sub, actions);
+  }
+
+  function cardShell(c: any, title: string, sub: string, actions: string) {
+    return `
+      <article class="cand-card" data-card="${c.id}">
+        <div class="cand-top">
+          <span class="cand-title">${esc(title)}</span>
+          ${statutBadge(c.statut)}
+        </div>
+        <p class="cand-sub">${sub}</p>
+        ${c.message ? `<p class="cand-msg">${esc(c.message)}</p>` : ''}
+        <span class="cand-date">${fmtDate(c.created_at)}</span>
+        ${actions}
+        <div class="cand-contact-slot"></div>
+      </article>`;
+  }
+
+  async function render() {
+    const root = document.getElementById('espace');
+    if (!root) return;
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = '/connexion?redirect=' + encodeURIComponent('/mon-espace');
+      return;
+    }
+    uid = session.user.id;
+
+    const [{ data: cands }, { data: myProfil }] = await Promise.all([
+      supabase.from('candidatures').select('*').order('created_at', { ascending: false }),
+      supabase.from('remplacants').select('id').eq('owner_id', uid).limit(1).maybeSingle(),
+    ]);
+
+    const list = cands || [];
+    const received = list.filter((c: any) => c.proposer_id !== uid);
+    const sent = list.filter((c: any) => c.proposer_id === uid);
+
+    const profilLink = myProfil
+      ? '<a class="btn-secondary" href="/trouver-un-remplacant">Voir l’annuaire</a>'
+      : '<a class="btn-secondary" href="/inscription-remplacant">Créer mon profil</a>';
+
+    root.innerHTML = `
+      <div class="espace-header">
+        <div>
+          <h1 class="espace-hello">Mon espace</h1>
+          <span class="espace-email">${esc(session.user.email)}</span>
+        </div>
+        <div class="espace-actions">
+          <a class="btn-primary" href="/publier-un-besoin">Publier un besoin</a>
+          ${profilLink}
+          <button id="espace-logout" class="btn-secondary" type="button">Déconnexion</button>
+        </div>
+      </div>
+
+      <div class="espace-section">
+        <h2>Candidatures &amp; propositions reçues</h2>
+        ${received.length ? received.map(receivedCard).join('') : '<p class="espace-empty">Aucune candidature reçue pour le moment.</p>'}
+      </div>
+
+      <div class="espace-section">
+        <h2>Mes candidatures &amp; propositions envoyées</h2>
+        ${sent.length ? sent.map(sentCard).join('') : '<p class="espace-empty">Vous n’avez rien envoyé pour le moment.</p>'}
+      </div>`;
+
+    document.getElementById('espace-logout')?.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = '/';
+    });
+  }
+
+  async function onAction(e: Event) {
+    const btn = (e.target as HTMLElement).closest('[data-action]') as HTMLElement | null;
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id as string;
+
+    if (action === 'contact') {
+      btn.setAttribute('disabled', 'true');
+      const { data, error } = await supabase.rpc('contact_candidature', { p_id: id });
+      const slot = btn.closest('.cand-card')?.querySelector('.cand-contact-slot') as HTMLElement;
+      if (error || !data) {
+        if (slot) slot.innerHTML = `<div class="cand-contact">Coordonnées indisponibles.</div>`;
+        return;
+      }
+      const c = typeof data === 'string' ? JSON.parse(data) : data;
+      if (slot) {
+        slot.innerHTML = `<div class="cand-contact">
+          <strong>${esc(c.nom || 'Contact')}</strong><br/>
+          ${c.email ? `✉️ <a href="mailto:${esc(c.email)}">${esc(c.email)}</a><br/>` : ''}
+          ${c.telephone ? `📞 <a href="tel:${esc(c.telephone)}">${esc(c.telephone)}</a>` : ''}
+        </div>`;
+      }
+      return;
+    }
+
+    const rpcName =
+      action === 'accepter' ? 'accepter_candidature'
+      : action === 'refuser' ? 'refuser_candidature'
+      : action === 'annuler' ? 'annuler_candidature'
+      : null;
+    if (!rpcName) return;
+
+    btn.setAttribute('disabled', 'true');
+    btn.textContent = '…';
+    const { error } = await supabase.rpc(rpcName, { p_id: id });
+    if (error) {
+      window.alert('Erreur : ' + error.message);
+      btn.removeAttribute('disabled');
+      return;
+    }
+    await render(); // recharge l'état (l'acceptation a pu refuser les concurrentes)
+  }
+
+  async function init() {
+    const root = document.getElementById('espace');
+    if (!root) return;
+    if (!supabaseConfigured) {
+      root.innerHTML = '<div class="card espace-state"><p class="text-muted">Authentification non configurée.</p></div>';
+      return;
+    }
+    if (root.dataset.bound !== 'true') {
+      root.dataset.bound = 'true';
+      root.addEventListener('click', onAction);
+    }
+    await render();
+  }
+
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>

@@ -1,17 +1,12 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
-import { SITE } from '@data/site';
 
 const breadcrumbs = [
   { name: 'Accueil', url: '/' },
   { name: 'Missions', url: '/missions' },
   { name: 'Détail', url: '/mission' },
 ];
-
-const supabaseUrl = SITE.supabase.url;
-const supabaseKey = SITE.supabase.anonKey;
-const notConfigured = supabaseUrl.includes('XXXX') || supabaseKey.includes('XXXX');
 ---
 
 <BaseLayout
@@ -24,28 +19,16 @@ const notConfigured = supabaseUrl.includes('XXXX') || supabaseKey.includes('XXXX
   <section class="section">
     <div class="container-content mission-wrap">
       <a href="/missions" class="back-link">← Retour aux missions</a>
-
       <div id="mission-detail" aria-live="polite">
-        {
-          notConfigured ? (
-            <div class="card mission-state">
-              <p class="text-muted">Stockage non configuré.</p>
-            </div>
-          ) : (
-            <div class="card mission-state">
-              <p class="text-muted">Chargement de la mission…</p>
-            </div>
-          )
-        }
+        <div class="card mission-state"><p class="text-muted">Chargement de la mission…</p></div>
       </div>
+      <div id="mission-action"></div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .mission-wrap {
-    max-width: 44rem;
-  }
+  .mission-wrap { max-width: 44rem; }
   .back-link {
     display: inline-block;
     margin-bottom: 1.5rem;
@@ -53,180 +36,199 @@ const notConfigured = supabaseUrl.includes('XXXX') || supabaseKey.includes('XXXX
     font-weight: 600;
     color: var(--color-accent);
   }
-  .back-link:hover {
-    text-decoration: underline;
-  }
-  .mission-state {
-    padding: 2.5rem;
-    text-align: center;
-  }
+  .back-link:hover { text-decoration: underline; }
+  .mission-state { padding: 2.5rem; text-align: center; }
 
-  /* Fiche (rendue en JS) */
-  :global(.md-card) {
-    padding: 2rem;
-  }
-  :global(.md-head) {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-  }
-  :global(.md-metier) {
-    font-family: var(--font-display);
-    font-size: clamp(1.5rem, 3vw, 2rem);
-    font-weight: 700;
-  }
-  :global(.md-badge) {
-    font-size: var(--text-sm);
-    font-weight: 600;
-    padding: 0.3rem 0.75rem;
-    border-radius: var(--radius-full);
-    background: var(--color-accent-soft);
-    color: var(--color-accent);
-  }
-  :global(.md-badge.urgent) {
-    background: #fee2e2;
-    color: #b91c1c;
-  }
-  :global(.md-grid) {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    margin-bottom: 1.75rem;
-  }
-  @media (min-width: 560px) {
-    :global(.md-grid) {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-  :global(.md-item) {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 1rem 1.25rem;
-    background: var(--color-bg-soft);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-  }
-  :global(.md-label) {
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--color-fg-subtle);
-    font-weight: 600;
-  }
-  :global(.md-value) {
-    font-weight: 600;
-    color: var(--color-fg);
-  }
-  :global(.md-details-block) {
-    margin-bottom: 1.75rem;
-  }
-  :global(.md-details-block h2) {
-    font-size: 1.125rem;
-    margin-bottom: 0.5rem;
-  }
-  :global(.md-details-text) {
-    color: var(--color-fg-muted);
-    line-height: 1.65;
-    white-space: pre-line;
-  }
-  :global(.md-actions) {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-  @media (max-width: 480px) {
-    :global(.md-actions) {
-      flex-direction: column;
-    }
-    :global(.md-actions a) {
-      width: 100%;
-    }
-  }
+  :global(.md-card) { padding: 2rem; }
+  :global(.md-head) { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+  :global(.md-metier) { font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; }
+  :global(.md-badge) { font-size: var(--text-sm); font-weight: 600; padding: 0.3rem 0.75rem; border-radius: var(--radius-full); background: var(--color-accent-soft); color: var(--color-accent); }
+  :global(.md-badge.urgent) { background: #fee2e2; color: #b91c1c; }
+  :global(.md-grid) { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.75rem; }
+  @media (min-width: 560px) { :global(.md-grid) { grid-template-columns: 1fr 1fr; } }
+  :global(.md-item) { display: flex; flex-direction: column; gap: 0.25rem; padding: 1rem 1.25rem; background: var(--color-bg-soft); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+  :global(.md-label) { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-fg-subtle); font-weight: 600; }
+  :global(.md-value) { font-weight: 600; color: var(--color-fg); }
+  :global(.md-details-block) { margin-bottom: 0.5rem; }
+  :global(.md-details-block h2) { font-size: 1.125rem; margin-bottom: 0.5rem; }
+  :global(.md-details-text) { color: var(--color-fg-muted); line-height: 1.65; white-space: pre-line; }
+
+  /* Zone d'action (postuler) */
+  .action-card { margin-top: 1.5rem; padding: 1.75rem 2rem; }
+  .action-card h2 { font-size: 1.25rem; margin-bottom: 0.75rem; }
+  .action-msg { color: var(--color-fg-muted); margin-bottom: 1rem; }
+  .action-field { width: 100%; min-height: 5rem; padding: 0.75rem 1rem; border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); font: inherit; margin-bottom: 1rem; resize: vertical; }
+  .action-note { font-size: var(--text-sm); padding: 0.875rem 1rem; border-radius: var(--radius-md); }
+  .action-note.ok { background: var(--color-teal-soft); color: #065f46; }
+  .action-note.info { background: var(--color-accent-soft); color: var(--color-accent); }
 </style>
 
-<script is:inline define:vars={{ supabaseUrl, supabaseKey, notConfigured }}>
-  function initMission() {
+<script>
+  import { supabase, supabaseConfigured } from '@lib/supabaseClient';
+
+  const esc = (s: unknown) =>
+    String(s ?? '').replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string)
+    );
+  const fmtDate = (d: string | null) =>
+    d ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(d)) : '';
+  function periode(m: any) {
+    const a = m.date_debut ? fmtDate(m.date_debut) : null;
+    const b = m.date_fin ? fmtDate(m.date_fin) : null;
+    if (a && b) return `${a} → ${b}`;
+    if (a) return `À partir du ${a}`;
+    return 'Dates à convenir';
+  }
+
+  async function initMission() {
     const box = document.getElementById('mission-detail');
-    if (!box || notConfigured || box.dataset.bound === 'true') return;
+    const actionBox = document.getElementById('mission-action');
+    if (!box || !actionBox || box.dataset.bound === 'true') return;
     box.dataset.bound = 'true';
-
-    const esc = (s) =>
-      String(s ?? '').replace(/[&<>"']/g, (c) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-      })[c]);
-
-    const fmtDate = (d) =>
-      d ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(d)) : '';
-
-    function periode(m) {
-      const a = m.date_debut ? fmtDate(m.date_debut) : null;
-      const b = m.date_fin ? fmtDate(m.date_fin) : null;
-      if (a && b) return `${a} → ${b}`;
-      if (a) return `À partir du ${a}`;
-      return 'Dates à convenir';
-    }
-
-    const id = new URLSearchParams(window.location.search).get('id');
-    if (!id) {
-      box.innerHTML =
-        '<div class="card mission-state"><p class="text-muted">Mission introuvable. <a href="/missions">Retour aux missions</a>.</p></div>';
-      return;
-    }
 
     const notFound = () => {
       box.innerHTML =
         '<div class="card mission-state"><h2 class="state-titre">Mission introuvable</h2><p class="text-muted">Cette mission n’est plus disponible. <a href="/missions">Voir les autres missions</a>.</p></div>';
     };
 
-    fetch(
-      `${supabaseUrl}/rest/v1/missions_publiques?id=eq.${encodeURIComponent(id)}&select=*&limit=1`,
-      { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } }
-    )
-      .then((r) => (r.ok ? r.json() : Promise.reject(r)))
-      .then((data) => {
-        const m = Array.isArray(data) ? data[0] : null;
-        if (!m) {
-          notFound();
-          return;
-        }
-        const urgent = (m.type_mission || '').toLowerCase() === 'urgent';
-        const lieu = [m.ville, m.type_etablissement].filter(Boolean).map(esc).join(' · ');
-        const params = new URLSearchParams();
-        if (m.metier) params.set('metier', m.metier);
-        params.set('mission', m.id);
+    if (!supabaseConfigured) {
+      box.innerHTML = '<div class="card mission-state"><p class="text-muted">Stockage non configuré.</p></div>';
+      return;
+    }
 
-        const item = (label, value) =>
-          value
-            ? `<div class="md-item"><span class="md-label">${esc(label)}</span><span class="md-value">${esc(value)}</span></div>`
-            : '';
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) {
+      notFound();
+      return;
+    }
 
-        box.innerHTML = `
-          <article class="card md-card">
-            <div class="md-head">
-              <span class="md-metier">${esc(m.metier || 'Remplacement')}</span>
-              ${m.type_mission ? `<span class="md-badge ${urgent ? 'urgent' : ''}">${esc(m.type_mission)}</span>` : ''}
-            </div>
-            <div class="md-grid">
-              ${item('Lieu', lieu)}
-              ${item('Période', periode(m))}
-              ${item('Rémunération', m.remuneration)}
-              ${item('Publié le', fmtDate(m.created_at))}
-            </div>
-            ${
-              m.details
-                ? `<div class="md-details-block"><h2>Détails du besoin</h2><p class="md-details-text">${esc(m.details)}</p></div>`
-                : ''
-            }
-            <div class="md-actions">
-              <a class="btn-primary btn-lg" href="/inscription-remplacant?${params.toString()}">Répondre à cette mission</a>
-              <a class="btn-secondary btn-lg" href="/missions">Retour aux missions</a>
-            </div>
-          </article>`;
-      })
-      .catch(notFound);
+    const { data: m } = await supabase
+      .from('missions_publiques')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    if (!m) {
+      notFound();
+      return;
+    }
+
+    const urgent = (m.type_mission || '').toLowerCase() === 'urgent';
+    const lieu = [m.ville, m.type_etablissement].filter(Boolean).map(esc).join(' · ');
+    const item = (label: string, value: unknown) =>
+      value ? `<div class="md-item"><span class="md-label">${esc(label)}</span><span class="md-value">${esc(value)}</span></div>` : '';
+
+    box.innerHTML = `
+      <article class="card md-card">
+        <div class="md-head">
+          <span class="md-metier">${esc(m.metier || 'Remplacement')}</span>
+          ${m.type_mission ? `<span class="md-badge ${urgent ? 'urgent' : ''}">${esc(m.type_mission)}</span>` : ''}
+        </div>
+        <div class="md-grid">
+          ${item('Lieu', lieu)}
+          ${item('Période', periode(m))}
+          ${item('Rémunération', m.remuneration)}
+          ${item('Publié le', fmtDate(m.created_at))}
+        </div>
+        ${m.details ? `<div class="md-details-block"><h2>Détails du besoin</h2><p class="md-details-text">${esc(m.details)}</p></div>` : ''}
+      </article>`;
+
+    await renderAction(id, m, actionBox);
+  }
+
+  async function renderAction(missionId: string, m: any, actionBox: HTMLElement) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    // Non connecté
+    if (!session) {
+      actionBox.innerHTML = `
+        <div class="card action-card">
+          <h2>Cette mission vous intéresse ?</h2>
+          <p class="action-msg">Connectez-vous comme remplaçant pour postuler en un clic.</p>
+          <a class="btn-primary btn-lg" href="/connexion?redirect=${encodeURIComponent('/mission?id=' + missionId)}">Se connecter pour postuler</a>
+        </div>`;
+      return;
+    }
+
+    const uid = session.user.id;
+
+    // C'est ma propre mission ?
+    const { data: mine } = await supabase.from('besoins').select('id').eq('id', missionId).eq('owner_id', uid).maybeSingle();
+    if (mine) {
+      actionBox.innerHTML = `
+        <div class="card action-card">
+          <h2>C’est votre mission</h2>
+          <p class="action-msg">Retrouvez les candidatures reçues dans votre espace.</p>
+          <a class="btn-primary" href="/mon-espace">Gérer dans Mon espace</a>
+        </div>`;
+      return;
+    }
+
+    // Ai-je un profil remplaçant ?
+    const { data: profil } = await supabase.from('remplacants').select('id, metier, zones').eq('owner_id', uid).limit(1).maybeSingle();
+    if (!profil) {
+      actionBox.innerHTML = `
+        <div class="card action-card">
+          <h2>Postuler à cette mission</h2>
+          <p class="action-msg">Créez d’abord votre profil de remplaçant (1 minute) pour pouvoir postuler.</p>
+          <a class="btn-primary btn-lg" href="/inscription-remplacant">Créer mon profil</a>
+        </div>`;
+      return;
+    }
+
+    // Déjà postulé ?
+    const { data: existing } = await supabase
+      .from('candidatures')
+      .select('id, statut')
+      .eq('mission_id', missionId)
+      .eq('profil_id', profil.id)
+      .maybeSingle();
+    if (existing) {
+      actionBox.innerHTML = `
+        <div class="card action-card">
+          <h2>Candidature envoyée</h2>
+          <p class="action-note info">Vous avez déjà postulé à cette mission. Suivez son statut dans <a href="/mon-espace">Mon espace</a>.</p>
+        </div>`;
+      return;
+    }
+
+    // Formulaire de candidature
+    actionBox.innerHTML = `
+      <div class="card action-card">
+        <h2>Postuler à cette mission</h2>
+        <p class="action-msg">Ajoutez un message à l’établissement (disponibilités, expérience…). Vos coordonnées ne seront partagées qu’après acceptation.</p>
+        <textarea id="postuler-msg" class="action-field" placeholder="Bonjour, je suis disponible sur cette période…"></textarea>
+        <button id="postuler-btn" class="btn-primary btn-lg">Envoyer ma candidature</button>
+        <p id="postuler-result" class="action-note ok" hidden></p>
+      </div>`;
+
+    const btn = document.getElementById('postuler-btn') as HTMLButtonElement;
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      btn.textContent = 'Envoi…';
+      const message = (document.getElementById('postuler-msg') as HTMLTextAreaElement).value.trim() || null;
+      const { error } = await supabase.from('candidatures').insert({
+        mission_id: missionId,
+        profil_id: profil.id,
+        proposer_id: uid,
+        proposer_role: 'remplacant',
+        message,
+        mission_libelle: `${m.metier || 'Mission'}${m.ville ? ' — ' + m.ville : ''}`,
+        profil_libelle: `${profil.metier || 'Remplaçant'}${profil.zones ? ' — ' + profil.zones : ''}`,
+      });
+      if (error) {
+        btn.disabled = false;
+        btn.textContent = 'Envoyer ma candidature';
+        window.alert('Erreur : ' + error.message);
+        return;
+      }
+      actionBox.innerHTML = `
+        <div class="card action-card">
+          <h2>Candidature envoyée ✅</h2>
+          <p class="action-note ok">L’établissement a été notifié. Suivez le statut dans <a href="/mon-espace">Mon espace</a>.</p>
+        </div>`;
+    });
   }
 
   initMission();

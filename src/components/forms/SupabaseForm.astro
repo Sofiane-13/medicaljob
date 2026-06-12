@@ -34,7 +34,7 @@ const successId = `${formId}-success`;
 ---
 
 <div class="fs-wrap">
-  <form id={formId} class="fs-form" data-not-configured={notConfigured ? 'true' : 'false'}>
+  <form id={formId} class="fs-form" data-table={table} data-success={successId}>
     <!-- Honeypot anti-spam -->
     <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" class="fs-honeypot" aria-hidden="true" />
 
@@ -161,15 +161,18 @@ const successId = `${formId}-success`;
   }
 </style>
 
-<script is:inline define:vars={{ formId, successId, table, supabaseUrl, supabaseKey }}>
-  function initSupabaseForm() {
-    const form = document.getElementById(formId);
-    if (!form || form.dataset.bound === 'true') return;
+<script>
+  import { supabase, supabaseConfigured } from '@lib/supabaseClient';
+
+  function initForm(form: HTMLFormElement) {
+    if (form.dataset.bound === 'true') return;
     form.dataset.bound = 'true';
 
-    const panel = document.getElementById(successId);
-    const errorEl = form.querySelector('.fs-error');
-    const submit = form.querySelector('.fs-submit');
+    const table = form.dataset.table as string;
+    const successId = form.dataset.success;
+    const panel = successId ? document.getElementById(successId) : null;
+    const errorEl = form.querySelector('.fs-error') as HTMLElement | null;
+    const submit = form.querySelector('.fs-submit') as HTMLButtonElement;
 
     const showSuccess = () => {
       form.hidden = true;
@@ -182,56 +185,58 @@ const successId = `${formId}-success`;
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // Honeypot : si rempli, on simule le succès sans rien envoyer.
-      if (form.querySelector('[name="_gotcha"]').value) {
+      // Honeypot
+      const gotcha = form.querySelector('[name="_gotcha"]') as HTMLInputElement | null;
+      if (gotcha && gotcha.value) {
         showSuccess();
         return;
       }
 
-      if (form.dataset.notConfigured === 'true') {
-        window.alert(
-          'Stockage non configuré. Crée un projet Supabase, colle l’URL + la clé anon dans src/data/site.ts, puis exécute le schéma SQL.'
-        );
+      if (!supabaseConfigured) {
+        window.alert('Stockage non configuré (Supabase).');
         return;
       }
 
-      const payload = {};
+      // Auth requise : on insère avec owner_id = utilisateur connecté.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        const here = window.location.pathname + window.location.search;
+        window.location.href = '/connexion?redirect=' + encodeURIComponent(here);
+        return;
+      }
+
+      const payload: Record<string, unknown> = {};
       new FormData(form).forEach((value, key) => {
         if (key.startsWith('_') || key === 'rgpd') return;
         const v = typeof value === 'string' ? value.trim() : value;
         payload[key] = v === '' ? null : v;
       });
+      payload.owner_id = session.user.id;
 
-      errorEl.hidden = true;
+      if (errorEl) errorEl.hidden = true;
       submit.disabled = true;
       const originalLabel = submit.textContent;
       submit.textContent = 'Envoi…';
 
-      try {
-        const res = await fetch(`${supabaseUrl}/rest/v1/${table}`, {
-          method: 'POST',
-          headers: {
-            apikey: supabaseKey,
-            Authorization: `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json',
-            Prefer: 'return=minimal',
-          },
-          body: JSON.stringify(payload),
-        });
-        if (res.ok) {
-          showSuccess();
-        } else {
-          errorEl.hidden = false;
-        }
-      } catch (err) {
-        errorEl.hidden = false;
-      } finally {
-        submit.disabled = false;
-        submit.textContent = originalLabel;
+      const { error } = await supabase.from(table).insert(payload);
+
+      submit.disabled = false;
+      submit.textContent = originalLabel;
+
+      if (error) {
+        if (errorEl) errorEl.hidden = false;
+        console.error('Insert error:', error);
+      } else {
+        showSuccess();
       }
     });
   }
 
-  initSupabaseForm();
-  document.addEventListener('astro:page-load', initSupabaseForm);
+  function initAll() {
+    document.querySelectorAll<HTMLFormElement>('form.fs-form').forEach(initForm);
+  }
+  initAll();
+  document.addEventListener('astro:page-load', initAll);
 </script>

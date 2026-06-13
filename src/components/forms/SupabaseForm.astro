@@ -162,7 +162,7 @@ const successId = `${formId}-success`;
 </style>
 
 <script>
-  import { supabase, supabaseConfigured } from '@lib/supabaseClient';
+  import { supabase, supabaseConfigured, getSessionSafe } from '@lib/supabaseClient';
 
   function initForm(form: HTMLFormElement) {
     if (form.dataset.bound === 'true') return;
@@ -198,9 +198,7 @@ const successId = `${formId}-success`;
       }
 
       // Auth requise : on insère avec owner_id = utilisateur connecté.
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      const session = await getSessionSafe();
       if (!session) {
         const here = window.location.pathname + window.location.search;
         window.location.href = '/connexion?redirect=' + encodeURIComponent(here);

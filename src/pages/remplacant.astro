@@ -54,7 +54,7 @@ const breadcrumbs = [
 </style>
 
 <script>
-  import { supabase, supabaseConfigured } from '@lib/supabaseClient';
+  import { supabase, supabaseConfigured, publicSelect, getSessionSafe } from '@lib/supabaseClient';
 
   const esc = (s: unknown) =>
     String(s ?? '').replace(/[&<>"']/g, (c) =>
@@ -85,7 +85,8 @@ const breadcrumbs = [
       return;
     }
 
-    const { data: p } = await supabase.from('remplacants_publics').select('*').eq('id', id).maybeSingle();
+    const rows = await publicSelect(`remplacants_publics?id=eq.${encodeURIComponent(id)}&select=*&limit=1`);
+    const p = rows[0];
     if (!p) {
       notFound();
       return;
@@ -112,9 +113,7 @@ const breadcrumbs = [
   }
 
   async function renderAction(profilId: string, p: any, actionBox: HTMLElement) {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const session = await getSessionSafe();
 
     if (!session) {
       actionBox.innerHTML = `

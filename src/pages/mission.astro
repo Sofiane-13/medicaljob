@@ -64,7 +64,7 @@ const breadcrumbs = [
 </style>
 
 <script>
-  import { supabase, supabaseConfigured } from '@lib/supabaseClient';
+  import { supabase, supabaseConfigured, publicSelect, getSessionSafe } from '@lib/supabaseClient';
 
   const esc = (s: unknown) =>
     String(s ?? '').replace(/[&<>"']/g, (c) =>
@@ -102,11 +102,8 @@ const breadcrumbs = [
       return;
     }
 
-    const { data: m } = await supabase
-      .from('missions_publiques')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
+    const rows = await publicSelect(`missions_publiques?id=eq.${encodeURIComponent(id)}&select=*&limit=1`);
+    const m = rows[0];
     if (!m) {
       notFound();
       return;
@@ -136,9 +133,7 @@ const breadcrumbs = [
   }
 
   async function renderAction(missionId: string, m: any, actionBox: HTMLElement) {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const session = await getSessionSafe();
 
     // Non connecté
     if (!session) {

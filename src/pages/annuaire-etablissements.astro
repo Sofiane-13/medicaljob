@@ -1,0 +1,194 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Breadcrumbs from '@components/seo/Breadcrumbs.astro';
+import CtaBand from '@components/ui/CtaBand.astro';
+import { SITE } from '@data/site';
+import { organization, breadcrumb, buildGraph } from '@lib/schema';
+
+const breadcrumbs = [
+  { name: 'Accueil', url: '/' },
+  { name: 'Annuaire des établissements', url: '/annuaire-etablissements' },
+];
+
+const supabaseUrl = SITE.supabase.url;
+const supabaseKey = SITE.supabase.anonKey;
+const notConfigured = supabaseUrl.includes('XXXX') || supabaseKey.includes('XXXX');
+
+const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
+---
+
+<BaseLayout
+  title="Annuaire des établissements de santé"
+  description="Découvrez les établissements de santé (hôpitaux, cliniques, EHPAD, cabinets, officines) qui recrutent des remplaçants sur MedicalJob."
+  jsonLd={jsonLd}
+>
+  <Breadcrumbs items={breadcrumbs} />
+
+  <section class="section-tight">
+    <div class="container-content ann-head" data-reveal>
+      <span class="eyebrow">Annuaire</span>
+      <h1 class="h-display">Les établissements qui recrutent</h1>
+      <p class="lede ann-lede">
+        Hôpitaux, cliniques, EHPAD, cabinets et officines ayant publié des besoins de
+        remplacement. Filtrez par ville et par type, puis consultez leurs missions.
+      </p>
+    </div>
+  </section>
+
+  <section class="section-tight">
+    <div class="container-content">
+      <div class="filters" data-reveal>
+        <div class="field filter-field">
+          <label class="field-label" for="filter-type">Type</label>
+          <select id="filter-type" class="select">
+            <option value="">Tous les types</option>
+            <option value="Hôpital">Hôpital</option>
+            <option value="Clinique">Clinique</option>
+            <option value="EHPAD">EHPAD</option>
+            <option value="Cabinet médical">Cabinet médical</option>
+            <option value="Officine">Officine</option>
+          </select>
+        </div>
+        <div class="field filter-field">
+          <label class="field-label" for="filter-ville">Ville</label>
+          <input id="filter-ville" class="input" type="text" placeholder="Ex. Lyon" />
+        </div>
+        <p class="filter-count text-subtle" id="ann-count" aria-live="polite"></p>
+      </div>
+
+      <div id="ann-list" class="ann-grid" aria-live="polite">
+        {
+          notConfigured ? (
+            <div class="ann-state card"><p class="text-muted">Stockage non configuré.</p></div>
+          ) : (
+            <div class="ann-state card"><p class="text-muted">Chargement des établissements…</p></div>
+          )
+        }
+      </div>
+      <div id="ann-sentinel" class="list-sentinel" hidden aria-hidden="true">Chargement…</div>
+    </div>
+  </section>
+
+  <CtaBand
+    titre="Votre établissement recrute ?"
+    texte="Publiez votre besoin de remplacement : il apparaîtra ici et sur le job board."
+  />
+</BaseLayout>
+
+<style>
+  .ann-head { max-width: 46rem; }
+  .ann-lede { margin-top: 1rem; }
+  .filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-bottom: 2rem; }
+  .filter-field { min-width: 11rem; flex: 1; }
+  .filter-count { font-size: var(--text-sm); margin-left: auto; padding-bottom: 0.75rem; }
+  .ann-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+  @media (min-width: 768px) { .ann-grid { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1100px) { .ann-grid { grid-template-columns: 1fr 1fr 1fr; } }
+  .ann-state { grid-column: 1 / -1; text-align: center; padding: 2.5rem; }
+  .list-sentinel { text-align: center; padding: 1.25rem; font-size: var(--text-sm); color: var(--color-fg-subtle); }
+  .list-sentinel[hidden] { display: none; }
+
+  :global(.etab-card) {
+    display: flex; flex-direction: column; gap: 0.6rem; padding: 1.5rem;
+    background: #fff; border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+  }
+  :global(.etab-top) { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+  :global(.etab-nom) { font-family: var(--font-display); font-size: 1.0625rem; font-weight: 700; color: var(--color-fg); }
+  :global(.etab-badge) { flex-shrink: 0; font-size: var(--text-xs); font-weight: 600; padding: 0.25rem 0.625rem; border-radius: var(--radius-full); background: var(--color-accent-soft); color: var(--color-accent); white-space: nowrap; }
+  :global(.etab-meta) { font-size: var(--text-sm); color: var(--color-fg-muted); display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; }
+  :global(.etab-foot) { margin-top: auto; padding-top: 0.4rem; }
+  :global(.etab-foot a) { font-size: var(--text-sm); font-weight: 600; color: var(--color-accent); }
+</style>
+
+<script>
+  import { publicSelect } from '@lib/supabaseClient';
+
+  const esc = (s: unknown) =>
+    String(s ?? '').replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string)
+    );
+
+  async function initAnnuaire() {
+    const list = document.getElementById('ann-list') as HTMLElement | null;
+    if (!list || list.dataset.bound === 'true') return;
+    list.dataset.bound = 'true';
+    const listEl: HTMLElement = list;
+
+    const sentinel = document.getElementById('ann-sentinel') as HTMLElement;
+    const countEl = document.getElementById('ann-count') as HTMLElement;
+    const fType = document.getElementById('filter-type') as HTMLSelectElement;
+    const fVille = document.getElementById('filter-ville') as HTMLInputElement;
+    const CHUNK = 12;
+    let etabs: any[] = [];
+    let filtered: any[] = [];
+    let rendered = 0;
+
+    function cardHtml(e: any) {
+      const lieu = [e.ville, e.type_etablissement].filter(Boolean).map(esc).join(' · ');
+      const params = new URLSearchParams();
+      if (e.ville) params.set('ville', e.ville);
+      return `
+        <article class="etab-card">
+          <div class="etab-top">
+            <span class="etab-nom">${esc(e.nom_structure || 'Établissement')}</span>
+            <span class="etab-badge">${esc(e.nb_missions)} mission${e.nb_missions > 1 ? 's' : ''}</span>
+          </div>
+          <div class="etab-meta">${lieu ? `<span>📍 ${lieu}</span>` : ''}</div>
+          <div class="etab-foot"><a href="/missions?${params.toString()}">Voir les missions →</a></div>
+        </article>`;
+    }
+
+    function renderMore() {
+      const next = filtered.slice(rendered, rendered + CHUNK);
+      if (next.length) {
+        listEl.insertAdjacentHTML('beforeend', next.map(cardHtml).join(''));
+        rendered += next.length;
+      }
+      if (sentinel) sentinel.hidden = rendered >= filtered.length;
+    }
+
+    function applyFilters() {
+      const t = fType.value;
+      const v = fVille.value.trim().toLowerCase();
+      filtered = etabs.filter((e) => {
+        if (t && e.type_etablissement !== t) return false;
+        if (v && !(e.ville || '').toLowerCase().includes(v)) return false;
+        return true;
+      });
+      countEl.textContent = `${filtered.length} établissement${filtered.length > 1 ? 's' : ''}`;
+      listEl.innerHTML = '';
+      rendered = 0;
+      if (filtered.length === 0) {
+        if (sentinel) sentinel.hidden = true;
+        listEl.innerHTML = '<div class="ann-state card"><p class="text-muted">Aucun établissement pour ces critères.</p></div>';
+        return;
+      }
+      renderMore();
+    }
+
+    if (sentinel && 'IntersectionObserver' in window) {
+      new IntersectionObserver(
+        (entries) => entries.forEach((e) => { if (e.isIntersecting) renderMore(); }),
+        { rootMargin: '400px 0px' }
+      ).observe(sentinel);
+    }
+
+    fType.addEventListener('change', applyFilters);
+    fVille.addEventListener('input', applyFilters);
+
+    try {
+      etabs = await publicSelect('etablissements_publics?select=*&order=nb_missions.desc');
+      if (!etabs.length) {
+        listEl.innerHTML = '<div class="ann-state card"><h2 class="state-titre">Bientôt</h2><p class="text-muted">Aucun établissement n’a encore publié de mission nominative.</p></div>';
+        return;
+      }
+      applyFilters();
+    } catch {
+      listEl.innerHTML = '<div class="ann-state card"><p class="text-muted">Impossible de charger l’annuaire pour le moment.</p></div>';
+    }
+  }
+
+  initAnnuaire();
+  document.addEventListener('astro:page-load', initAnnuaire);
+</script>

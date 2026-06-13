@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Hero from '@components/home/Hero.astro';
-import DeuxFaces from '@components/home/DeuxFaces.astro';
 import CommentCaMarche from '@components/home/CommentCaMarche.astro';
 import MetiersCouverts from '@components/home/MetiersCouverts.astro';
 import Confiance from '@components/home/Confiance.astro';
@@ -41,7 +40,6 @@ const jsonLd = buildGraph(organization(), website(), faqPage(faqs));
   jsonLd={jsonLd}
 >
   <Hero />
-  <DeuxFaces />
   <CommentCaMarche />
   <MetiersCouverts />
   <Confiance />

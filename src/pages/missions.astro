@@ -250,6 +250,8 @@ const jsonLd = buildGraph(organization(), breadcrumb(breadcrumbs));
     const countEl = document.getElementById('missions-count');
     const filterMetier = document.getElementById('filter-metier');
     const filterVille = document.getElementById('filter-ville');
+    const urlVille = new URLSearchParams(window.location.search).get('ville');
+    if (urlVille) filterVille.value = urlVille;
     let missions = [];
 
     const esc = (s) =>

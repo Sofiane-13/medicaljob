@@ -1,112 +1,232 @@
 ---
-// Hero de la landing — double promesse (établissements / remplaçants)
+// Hero landing — double choix façon Diasporteur :
+// « Je suis un établissement » / « Je suis un professionnel de santé »
 ---
 
 <section class="hero">
   <div class="container-content hero-inner">
-    <div class="hero-content">
-      <span class="badge" data-reveal>● Médecins · Infirmiers · Pharmaciens · Sages-femmes · Préparateurs</span>
-      <h1 class="hero-title" data-reveal>
-        Trouvez un <span class="accent">remplacement</span>,<br />
-        ou un <span class="accent">remplaçant</span>, en santé.
-      </h1>
-      <p class="hero-lede lede" data-reveal>
-        MedicalJob met en relation les hôpitaux, cliniques, EHPAD, cabinets et officines
-        avec des professionnels de santé remplaçants disponibles. Publiez un besoin ou
-        trouvez votre prochaine mission — partout en France.
-      </p>
-      <div class="hero-actions" data-reveal>
-        <a href="/publier-un-besoin" class="btn-primary btn-lg">
-          J’ai besoin d’un remplaçant
-        </a>
-        <a href="/inscription-remplacant" class="btn-secondary btn-lg">
-          Je cherche des remplacements
-        </a>
-      </div>
-      <ul class="hero-proof" data-reveal>
-        <li><strong>Gratuit</strong> pour les remplaçants</li>
-        <li><strong>Sans engagement</strong> pour les établissements</li>
-        <li><strong>Réponse rapide</strong> aux besoins urgents</li>
-      </ul>
+    <p class="hero-tagline" data-reveal>
+      La plateforme de mise en relation pour les remplacements en santé
+    </p>
+    <h1 class="hero-title" data-reveal>
+      Trouvez un remplaçant, ou une mission, en quelques clics
+    </h1>
+
+    <div class="choice-grid" data-reveal>
+      <!-- Établissement -->
+      <a href="/trouver-un-remplacant" class="choice-card choice-etab">
+        <span class="choice-icon" aria-hidden="true">🏥</span>
+        <div class="choice-body">
+          <span class="choice-eyebrow">Je suis un établissement</span>
+          <span class="choice-title">Je cherche un remplaçant</span>
+          <span class="choice-hint">Parcourir les profils disponibles</span>
+        </div>
+        <span class="choice-arrow" aria-hidden="true">→</span>
+      </a>
+
+      <!-- Professionnel -->
+      <a href="/missions" class="choice-card choice-pro">
+        <span class="choice-icon" aria-hidden="true">🩺</span>
+        <div class="choice-body">
+          <span class="choice-eyebrow">Je suis un professionnel de santé</span>
+          <span class="choice-title">Je cherche une mission</span>
+          <span class="choice-hint">Voir les missions de remplacement</span>
+        </div>
+        <span class="choice-arrow" aria-hidden="true">→</span>
+      </a>
     </div>
 
-    <div class="hero-cards" aria-hidden="true">
-      <div class="mini-card mc-1" data-reveal>
-        <span class="mc-icone">🏥</span>
-        <div>
-          <p class="mc-titre">Clinique du Parc</p>
-          <p class="mc-sub">Cherche un IDE · 3 jours · urgent</p>
-        </div>
-      </div>
-      <div class="mini-card mc-2" data-reveal>
-        <span class="mc-icone">⚕️</span>
-        <div>
-          <p class="mc-titre">Pharmacien remplaçant</p>
-          <p class="mc-sub">Disponible · Lyon & alentours</p>
-        </div>
-      </div>
-      <div class="mini-card mc-3" data-reveal>
-        <span class="mc-icone">🩺</span>
-        <div>
-          <p class="mc-titre">EHPAD Les Tilleuls</p>
-          <p class="mc-sub">Médecin coordonnateur · 2 semaines</p>
-        </div>
-      </div>
+    <div class="hero-secondary" data-reveal>
+      <a href="/publier-un-besoin" class="sec-link">＋ Publier un besoin</a>
+      <a href="/inscription-remplacant" class="sec-link">＋ Créer mon profil de remplaçant</a>
     </div>
+
+    <div class="hero-quick" data-reveal>
+      <span class="quick-label">Parcourir :</span>
+      <a href="/missions" class="quick-link">Voir les missions</a>
+      <a href="/trouver-un-remplacant" class="quick-link">Voir les remplaçants</a>
+      <a href="/annuaire-etablissements" class="quick-link">Annuaire des établissements</a>
+    </div>
+
+    <ul class="hero-proof" data-reveal>
+      <li><strong>Gratuit</strong> pour les remplaçants</li>
+      <li><strong>Sans engagement</strong> pour les établissements</li>
+      <li>Médecins · IDE · Pharmaciens · Sages-femmes · Préparateurs</li>
+    </ul>
   </div>
 </section>
 
 <style>
   .hero {
+    position: relative;
+    color: #fff;
     background:
-      radial-gradient(60% 60% at 80% 0%, var(--color-bg-tint) 0%, transparent 70%),
-      linear-gradient(180deg, var(--color-bg-soft) 0%, var(--color-bg) 100%);
-    padding-block: clamp(3rem, 7vw, 6rem);
+      radial-gradient(70% 90% at 85% 0%, rgba(15, 168, 150, 0.35) 0%, transparent 60%),
+      linear-gradient(150deg, #0a4fad 0%, #0e63d6 45%, #0c8f9e 100%);
+    padding-block: clamp(2.5rem, 6vw, 4.5rem);
   }
   .hero-inner {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 3rem;
-    align-items: center;
+    max-width: 60rem;
+    margin-inline: auto;
+    text-align: center;
   }
-  @media (min-width: 1024px) {
-    .hero-inner {
-      grid-template-columns: 1.15fr 0.85fr;
-    }
+  .hero-tagline {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
   .hero-title {
-    font-size: clamp(2.125rem, 5.5vw, 3.75rem);
-    line-height: 1.06;
-    margin: 1.25rem 0 0;
+    color: #fff;
+    font-size: clamp(1.875rem, 4.8vw, 3.25rem);
+    line-height: 1.08;
+    margin: 1rem auto 0;
+    max-width: 24ch;
   }
-  .accent {
+
+  /* === Deux cartes de choix === */
+  .choice-grid {
+    margin-top: 2.25rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    text-align: left;
+  }
+  @media (min-width: 720px) {
+    .choice-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .choice-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.375rem 1.5rem;
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    color: var(--color-fg);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .choice-card:hover {
+    transform: translateY(-3px);
+  }
+  .choice-icon {
+    flex-shrink: 0;
+    width: 3.25rem;
+    height: 3.25rem;
+    display: grid;
+    place-items: center;
+    font-size: 1.6rem;
+    border-radius: var(--radius-md);
+  }
+  .choice-etab .choice-icon {
+    background: var(--color-accent-soft);
+  }
+  .choice-pro .choice-icon {
+    background: var(--color-teal-soft);
+  }
+  .choice-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+    min-width: 0;
+  }
+  .choice-eyebrow {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .choice-etab .choice-eyebrow {
     color: var(--color-accent);
   }
-  .hero-lede {
-    margin-top: 1.5rem;
-    max-width: 36rem;
+  .choice-pro .choice-eyebrow {
+    color: var(--color-teal);
   }
-  .hero-actions {
+  .choice-title {
+    font-family: var(--font-display);
+    font-size: 1.1875rem;
+    font-weight: 700;
+    color: var(--color-fg);
+    line-height: 1.2;
+  }
+  .choice-hint {
+    font-size: var(--text-sm);
+    color: var(--color-fg-muted);
+  }
+  .choice-arrow {
+    flex-shrink: 0;
+    font-size: 1.5rem;
+    transition: transform 0.2s ease;
+  }
+  .choice-etab .choice-arrow {
+    color: var(--color-accent);
+  }
+  .choice-pro .choice-arrow {
+    color: var(--color-teal);
+  }
+  .choice-card:hover .choice-arrow {
+    transform: translateX(5px);
+  }
+
+  /* === Liens secondaires === */
+  .hero-secondary {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem 1.5rem;
+  }
+  .sec-link {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+    padding-bottom: 1px;
+  }
+  .sec-link:hover {
+    border-color: #fff;
+  }
+
+  /* === Accès rapide === */
+  .hero-quick {
     margin-top: 2rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.875rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 0.75rem;
+    font-size: var(--text-sm);
   }
-  @media (max-width: 480px) {
-    .hero-actions {
-      flex-direction: column;
-    }
-    .hero-actions a {
-      width: 100%;
-    }
+  .quick-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
   }
+  .quick-link {
+    display: inline-block;
+    padding: 0.4rem 0.875rem;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius-full);
+    color: #fff;
+    font-weight: 600;
+    transition: background 0.2s ease;
+  }
+  .quick-link:hover {
+    background: rgba(255, 255, 255, 0.26);
+  }
+
   .hero-proof {
     margin-top: 2rem;
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 0.5rem 1.5rem;
     font-size: var(--text-sm);
-    color: var(--color-fg-muted);
+    color: rgba(255, 255, 255, 0.92);
   }
   .hero-proof li {
     position: relative;
@@ -116,57 +236,6 @@
     content: '✓';
     position: absolute;
     left: 0;
-    color: var(--color-teal);
     font-weight: 700;
-  }
-
-  /* Mini-cards illustratives */
-  .hero-cards {
-    display: none;
-    position: relative;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  @media (min-width: 1024px) {
-    .hero-cards {
-      display: flex;
-    }
-  }
-  .mini-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    background: #fff;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: 1.125rem 1.25rem;
-    box-shadow: var(--shadow-md);
-  }
-  .mc-1 {
-    margin-right: 2.5rem;
-  }
-  .mc-2 {
-    margin-left: 3rem;
-  }
-  .mc-3 {
-    margin-right: 1rem;
-  }
-  .mc-icone {
-    font-size: 1.75rem;
-    width: 3rem;
-    height: 3rem;
-    display: grid;
-    place-items: center;
-    background: var(--color-bg-tint);
-    border-radius: var(--radius-md);
-    flex-shrink: 0;
-  }
-  .mc-titre {
-    font-weight: 600;
-    color: var(--color-fg);
-  }
-  .mc-sub {
-    font-size: var(--text-sm);
-    color: var(--color-fg-subtle);
   }
 </style>

@@ -93,8 +93,8 @@ export const NAV = {
     'Le service': [
       { label: 'Trouver une mission', href: '/missions' },
       { label: 'Trouver un remplaçant', href: '/trouver-un-remplacant' },
+      { label: 'Annuaire des établissements', href: '/annuaire-etablissements' },
       { label: 'Pour les établissements', href: '/etablissements' },
-      { label: 'Pour les remplaçants', href: '/remplacants' },
       { label: 'Comment ça marche', href: '/comment-ca-marche' },
     ],
     'Remplacements': [
